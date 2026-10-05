@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S7Gear Login</title>
+
+    <link rel="stylesheet" href="css/login.css">
+</head>
+
+<body>
+
+<div class="login-container">
+
+    <div class="login-card">
+
+        <!-- Logo -->
+        <div class="logo">
+            🔧
+        </div>
+
+        <!-- Title -->
+        <h1>S7Gear</h1>
+        <p class="subtitle">POWER TOOL MANAGEMENT SYSTEM</p>
+
+        <!-- Login Form -->
+        <form>
+
+            <!-- Username -->
+            <div class="form-group">
+                <label for="username">Username</label>
+
+                <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    placeholder="Enter your username"
+                >
+            </div>
+
+            <!-- Password -->
+            <div class="form-group">
+                <label for="password">Password</label>
+
+                <div class="password-container">
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        placeholder="Enter your password"
+                    >
+
+                    <button type="button" class="show-password" id="togglePassword">
+                        <img src="img/show.png" alt="Show icon" id="showIcon" class="show-icon">
+                        <img src="img/hide.png" alt="hide icon" id="hideIcon" class="show-icon">
+                    </button>
+                </div>
+            </div>
+
+            <!-- Sign In -->
+            <button type="submit" class="sign-in-button">
+                Sign In
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+<script src="js/login.js"></script>
+</body>
+</html>
