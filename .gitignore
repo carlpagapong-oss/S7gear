@@ -561,3 +561,4 @@ frontend/node_modules/electron/dist/locales/vi.pak
 frontend/node_modules/electron/dist/locales/zh-CN.pak
 frontend/node_modules/electron/dist/locales/zh-TW.pak
 frontend/node_modules/electron/dist/resources/default_app.asar
+backend/src/.env
