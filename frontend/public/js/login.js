@@ -21,3 +21,14 @@ togglePassword.addEventListener("click", function () {
     }
 
 });
+
+const loginForm = document.querySelector("form");
+
+loginForm.addEventListener("submit", async function (event) {
+    event.preventDefault();
+
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
+
+    await login(username, password);
+});
