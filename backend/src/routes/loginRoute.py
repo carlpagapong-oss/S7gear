@@ -12,8 +12,18 @@ def login():
     password = data.get("password")
 
     # validation
-    if not username or not password:
-        return jsonify({"status": "error", "message": "Missing fields"}), 400
+    if not username:
+        return jsonify({
+            "status": "error",
+            "message": "Username is missing"
+        }), 400
+
+    if not password:
+        return jsonify({
+            "status": "error",
+            "message": "Password is missing"
+        }), 400
+        
 
     # connect to database
     connection = get_connected()

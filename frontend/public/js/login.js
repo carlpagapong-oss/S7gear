@@ -1,3 +1,5 @@
+
+
 const passwordInput = document.getElementById("password");
 const togglePassword = document.getElementById("togglePassword");
 
@@ -22,13 +24,33 @@ togglePassword.addEventListener("click", function () {
 
 });
 
+// Login form
+
 const loginForm = document.querySelector("form");
 
 loginForm.addEventListener("submit", async function (event) {
     event.preventDefault();
 
-    const username = document.getElementById("username").value;
+    const username = document.getElementById("username").value.trim();
     const password = document.getElementById("password").value;
+
+
+    // validation
+
+    if (!username && !password) {
+      alert("Please enter your username and password.");
+      return;
+    }   
+
+    if(!username) {
+      alert("Username is missing");
+      return;
+    }
+
+    if(!password) {
+      alert("Password is missing");
+      return;
+    }
 
     await login(username, password);
 });
