@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>History — S7Gear</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../Style/style.css">
+</head>
+
+<body data-page="history">
+  <div class="app">
+    <aside class="sidebar" id="sidebar"></aside>
+
+    <main>
+      <header class="topbar"><b>History</b></header>
+
+      <div class="content">
+        <h2 class="title">History</h2>
+        <p class="subtitle">Complete borrowing, inspection, and maintenance records</p>
+
+        <div class="tabs">
+          <button class="tab active" data-tab="borrow">Borrowing History<sup id="countBorrow">0</sup></button>
+          <button class="tab" data-tab="inspection">Inspection History<sup id="countInspection">0</sup></button>
+          <button class="tab" data-tab="maintenance">Maintenance History<sup id="countMaintenance">0</sup></button>
+        </div>
+
+        <div class="card">
+          <!-- Search + filter (shared by all three tabs) -->
+          <div class="toolbar">
+            <input id="searchBox" placeholder="Search by Tool ID, type...">
+            <select id="statusFilter"></select>
+            <button class="btn primary hidden" id="addMaintenanceButton">+ Add Maintenance</button>
+          </div>
+
+          <!-- ============ TAB 1: Borrowing ============ -->
+          <div class="table-wrap" id="panel-borrow">
+            <table>
+              <thead>
+                <tr>
+                  <th>RECORD ID</th><th>TOOL ID</th><th>TOOL TYPE</th><th>BORROWER</th>
+                  <th>BORROW DATE</th><th>EXPECTED RETURN</th><th>ACTUAL RETURN</th>
+                  <th>CONDITION RETURNED</th><th>STATUS</th>
+                </tr>
+              </thead>
+              <tbody id="body-borrow"></tbody>
+            </table>
+            <div class="foot" id="foot-borrow"></div>
+          </div>
+
+          <!-- ============ TAB 2: Inspection ============ -->
+          <div class="table-wrap hidden" id="panel-inspection">
+            <table>
+              <thead>
+                <tr>
+                  <th>RECORD ID</th><th>TOOL ID</th><th>TOOL TYPE</th><th>DATE</th>
+                  <th>INSPECTOR</th><th>RESULT</th><th>CONDITION</th><th>FINDINGS</th><th>REMARKS</th>
+                </tr>
+              </thead>
+              <tbody id="body-inspection"></tbody>
+            </table>
+            <div class="foot" id="foot-inspection"></div>
+          </div>
+
+          <!-- ============ TAB 3: Maintenance ============ -->
+          <div class="table-wrap hidden" id="panel-maintenance">
+            <table>
+              <thead>
+                <tr>
+                  <th>RECORD ID</th><th>TOOL ID</th><th>TOOL TYPE</th><th>DATE</th><th>TYPE</th>
+                  <th>ISSUE</th><th>ACTION TAKEN</th><th>STATUS</th><th>NEXT SERVICE</th><th></th>
+                </tr>
+              </thead>
+              <tbody id="body-maintenance"></tbody>
+            </table>
+            <div class="foot" id="foot-maintenance"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ============ Pop-up: Add maintenance record ============ -->
+  <div class="modal hidden" id="maintenanceModal">
+    <div class="modal-card">
+      <h3>Add Maintenance Record</h3>
+
+      <form id="maintenanceForm">
+        <div class="fgrid">
+          <div class="field">
+            <label>TOOL *</label>
+            <select name="toolId" id="maintenanceTool"></select>
+          </div>
+          <div class="field">
+            <label>DATE</label>
+            <input type="date" name="date" id="maintenanceDate">
+          </div>
+        </div>
+
+        <div class="field">
+          <label>TYPE</label>
+          <select name="type">
+            <option>Repair</option>
+            <option>Preventive Maintenance</option>
+            <option>Cleaning</option>
+            <option>Part Replacement</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>ISSUE *</label>
+          <input name="issue" required>
+        </div>
+        <div class="field">
+          <label>ACTION TAKEN *</label>
+          <textarea name="action" required></textarea>
+        </div>
+
+        <div class="fgrid">
+          <div class="field">
+            <label>STATUS</label>
+            <select name="status">
+              <option>In Progress</option>
+              <option>Completed</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>NEXT SERVICE</label>
+            <input type="date" name="next">
+          </div>
+        </div>
+
+        <div class="row end">
+          <button type="button" class="btn" data-close-modal>Cancel</button>
+          <button class="btn primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="../Script/config.js"></script>
+  <script src="../Script/helpers.js"></script>
+  <script src="../Script/seed-data.js"></script>
+  <script src="../Script/database.js"></script>
+  <script src="../Script/ui.js"></script>
+  <script src="../Script/pages/history.js"></script>
+</body>
+</html>

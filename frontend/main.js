@@ -7,7 +7,7 @@ function createWindow() {
         height: 800,
     });
 
-    win.loadFile(path.join(__dirname, "public", "login.html"));
+    win.loadFile(path.join(__dirname, "public", "pages", "login.html"));
 }
 
 app.whenReady().then(() => {

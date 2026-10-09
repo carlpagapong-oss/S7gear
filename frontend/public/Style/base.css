@@ -1,0 +1,57 @@
+/* =========================================================
+   BASE — colors, reset, default text, small helper classes
+   ========================================================= */
+
+/* App colors. Change a color here and it changes everywhere. */
+:root {
+  --bg: #f1f4f9;
+  --card: #ffffff;
+  --border: #e2e8f0;
+  --text: #0f172a;
+  --muted: #64748b;
+
+  --side: #0f172a;
+  --side2: #1e293b;
+
+  --primary: #1d4ed8;
+  --primary-soft: #dbeafe;
+  --green: #16a34a;
+  --green-soft: #dcfce7;
+  --orange: #d97706;
+  --orange-soft: #fef3c7;
+  --purple: #7c3aed;
+  --purple-soft: #ede9fe;
+  --red: #dc2626;
+  --red-soft: #fee2e2;
+}
+
+/* Reset: remove the browser's default spacing */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Work Sans", system-ui, sans-serif;
+  font-size: 14px;
+  background: var(--bg);
+  color: var(--text);
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* ---------- Helper classes (use them on any element) ---------- */
+.hidden     { display: none !important; }
+.mono       { font-family: "JetBrains Mono", monospace; font-size: 13px; }
+.text-right { text-align: right; }
+.mb         { margin-bottom: 14px; }   /* space below a card */
+.mt         { margin-top: 14px; }
+.mt-sm      { margin-top: 10px; }
+
+.t-orange { color: var(--orange); }
+.t-red    { color: var(--red); }
+.t-muted  { color: var(--muted); }

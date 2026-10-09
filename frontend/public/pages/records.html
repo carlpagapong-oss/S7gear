@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tool Records — S7Gear</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../Style/style.css">
+</head>
+
+<body data-page="records">
+  <div class="app">
+    <aside class="sidebar" id="sidebar"></aside>
+
+    <main>
+      <header class="topbar"><b>Tool Records</b></header>
+
+      <div class="content">
+        <div class="page-header">
+          <div>
+            <h2 class="title">Tool Records</h2>
+            <p class="subtitle" id="toolCount"></p>
+          </div>
+          <button class="btn primary" id="addToolButton">+ Add Tool</button>
+        </div>
+
+        <!-- Tool table. Rows are filled in by js/pages/records.js -->
+        <div class="card table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>TOOL ID</th>
+                <th>TOOL TYPE</th>
+                <th>POWER</th>
+                <th>CONDITION</th>
+                <th>STATUS</th>
+                <th>CURRENT BORROWER</th>
+                <th>EXPECTED RETURN</th>
+                <th>LAST INSPECTION</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="toolsBody"></tbody>
+          </table>
+          <div class="foot" id="toolsFoot"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ============ Pop-up: Add / Edit tool ============ -->
+  <div class="modal hidden" id="toolModal">
+    <div class="modal-card">
+      <h3 id="toolModalTitle">Add New Tool</h3>
+
+      <form id="toolForm">
+        <div class="field">
+          <label>TOOL ID *</label>
+          <input name="id" id="toolId" required pattern="PT-\d{3,}">
+        </div>
+
+        <div class="field">
+          <label>TOOL TYPE *</label>
+          <input name="type" id="toolType" list="toolTypeList" required>
+          <datalist id="toolTypeList"></datalist>
+        </div>
+
+        <div class="fgrid">
+          <div class="field">
+            <label>POWER TYPE</label>
+            <select name="power" id="toolPower">
+              <option>Corded</option>
+              <option>Cordless</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>CONDITION</label>
+            <select name="condition" id="toolCondition">
+              <option>New</option>
+              <option>Good</option>
+              <option>Fair</option>
+              <option>Damaged</option>
+              <option>Unsafe</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>STATUS</label>
+          <select name="status" id="toolStatus">
+            <option>Available</option>
+            <option>Under Inspection</option>
+            <option>Under Maintenance</option>
+            <option>Unsafe</option>
+            <!-- Only shown when editing a tool that is already borrowed (status is then locked) -->
+            <option hidden>Borrowed</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>LAST INSPECTION</label>
+          <input type="date" name="lastInspection" id="toolLastInspection">
+        </div>
+
+        <div class="row end">
+          <button type="button" class="btn" data-close-modal>Cancel</button>
+          <button class="btn primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============ Pop-up: View tool details ============ -->
+  <div class="modal hidden" id="detailsModal">
+    <div class="modal-card">
+      <h3 id="detailsTitle"></h3>
+
+      <div class="kv"><span class="kv-label">Power</span><div id="detailsPower"></div></div>
+      <div class="kv"><span class="kv-label">Condition</span><div id="detailsCondition"></div></div>
+      <div class="kv"><span class="kv-label">Status</span><div id="detailsStatus"></div></div>
+      <div class="kv"><span class="kv-label">Current Borrower</span><div id="detailsBorrower"></div></div>
+      <div class="kv"><span class="kv-label">Last Inspection</span><div id="detailsInspection"></div></div>
+
+      <h4 class="section-title">Activity</h4>
+      <div class="card" id="detailsActivity"></div>
+
+      <div class="row end mt">
+        <button class="btn" data-close-modal>Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="../Script/config.js"></script>
+  <script src="../Script/helpers.js"></script>
+  <script src="../Script/seed-data.js"></script>
+  <script src="../Script/database.js"></script>
+  <script src="../Script/ui.js"></script>
+  <script src="../Script/pages/records.js"></script>
+</body>
+</html>

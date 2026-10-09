@@ -1,3 +1,0 @@
-/* Responsive rules */
-@media (max-width:1000px){.stats{grid-template-columns:repeat(3,1fr)}.grid2,.grid-side{grid-template-columns:1fr}}
-@media (max-width:700px){.sidebar{position:static;width:100%}.app{flex-direction:column}main{margin-left:0}.fgrid{grid-template-columns:1fr}}

@@ -1,0 +1,96 @@
+/* =========================================================
+   LAYOUT — sidebar, top bar, page content area
+   ========================================================= */
+
+.app {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ---------- Sidebar (built by js/ui.js) ---------- */
+.sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: 190px;
+  display: flex;
+  flex-direction: column;
+  background: var(--side);
+  color: #cbd5e1;
+}
+
+.brand {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 18px 16px;
+  border-bottom: 1px solid var(--side2);
+}
+.brand b     { display: block; color: #fff; }
+.brand small { font-size: 9px; letter-spacing: 0.1em; color: var(--muted); }
+
+.logo {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--primary);
+  font-size: 18px;
+}
+
+nav {
+  flex: 1;
+  padding: 12px 8px;
+}
+nav a {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 4px;
+  padding: 9px 12px;
+  border-radius: 6px;
+  color: #cbd5e1;
+  font-weight: 500;
+  text-decoration: none;
+}
+nav a:hover  { background: var(--side2); }
+nav a.active { background: var(--primary); color: #fff; font-weight: 600; }
+
+/* ---------- Main area ---------- */
+main {
+  flex: 1;
+  min-width: 0;
+  margin-left: 190px;   /* same as the sidebar width */
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.content {
+  padding: 22px 20px 40px;
+}
+
+/* ---------- Page headings ---------- */
+h2.title  { font-size: 20px; font-weight: 700; }
+.subtitle { margin: 4px 0 20px; color: var(--muted); }
+
+/* Heading on the left, button on the right */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.page-header .subtitle { margin-bottom: 0; }

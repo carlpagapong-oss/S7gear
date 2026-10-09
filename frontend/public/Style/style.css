@@ -1,0 +1,13 @@
+/* =========================================================
+   S7Gear stylesheet
+   Every page links ONLY this file. It pulls in the others,
+   in this order (order matters: later files can override earlier ones).
+   ========================================================= */
+
+@import url("../Style/base.css");        /* colors, reset, small helper classes */
+@import url("../Style/layout.css");      /* sidebar, top bar, page header       */
+@import url("../Style/components.css");  /* badges, buttons, tabs, modal, toast */
+@import url("../Style/forms.css");       /* inputs, fields, option buttons      */
+@import url("../Style/tables.css");      /* tables, search toolbar              */
+@import url("../Style/cards.css");       /* cards, stat boxes, lists, grids     */
+@import url("../Style/responsive.css");  /* phone / tablet adjustments          */

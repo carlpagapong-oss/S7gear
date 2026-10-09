@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Borrowing & Return — S7Gear</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../Style/style.css">
+</head>
+
+<body data-page="borrow">
+  <div class="app">
+    <aside class="sidebar" id="sidebar"></aside>
+
+    <main>
+      <header class="topbar"><b>Borrowing &amp; Return</b></header>
+
+      <div class="content">
+        <h2 class="title">Borrowing &amp; Return</h2>
+        <p class="subtitle" id="subtitle"></p>
+
+        <div class="tabs">
+          <button class="tab active" data-tab="borrow">Borrow Tool</button>
+          <button class="tab" data-tab="return">Return Tool</button>
+        </div>
+
+        <!-- ================= TAB 1: BORROW ================= -->
+        <section id="borrowPanel" class="grid-side">
+
+          <div class="card">
+            <div class="card-h">Find Tool</div>
+            <div class="card-b">
+              <form id="findBorrowForm" class="row find-form">
+                <input id="borrowToolId" placeholder="e.g. PT-001">
+                <button class="btn primary">Search</button>
+              </form>
+              <!-- Selected tool summary, or the list of available tools -->
+              <div id="borrowToolInfo"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-h">Borrowing Details</div>
+            <div class="card-b">
+              <form id="borrowForm">
+                <div class="field">
+                  <label>BORROWER NAME *</label>
+                  <input name="borrower" placeholder="Full name" required>
+                </div>
+
+                <div class="fgrid">
+                  <div class="field">
+                    <label>BORROW DATE</label>
+                    <input type="date" name="date" id="borrowDate">
+                  </div>
+                  <div class="field">
+                    <label>TIME</label>
+                    <input type="time" name="time" id="borrowTime">
+                  </div>
+                </div>
+
+                <div class="field">
+                  <label>EXPECTED RETURN DATE *</label>
+                  <input type="date" name="expected" id="borrowExpected" required>
+                </div>
+                <div class="field">
+                  <label>PURPOSE *</label>
+                  <textarea name="purpose" placeholder="Reason for borrowing..." required></textarea>
+                </div>
+                <div class="field">
+                  <label>REMARKS</label>
+                  <textarea name="remarks" placeholder="Additional notes..."></textarea>
+                </div>
+
+                <button class="btn primary full" id="borrowSubmit" disabled>Confirm Borrowing</button>
+                <p class="hint" id="borrowHint"></p>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= TAB 2: RETURN ================= -->
+        <section id="returnPanel" class="grid-side hidden">
+
+          <div>
+            <div class="card mb">
+              <div class="card-h">Find Borrowed Tool</div>
+              <div class="card-b">
+                <form id="findReturnForm" class="row find-form">
+                  <input id="returnToolId" placeholder="e.g. PT-002">
+                  <button class="btn primary">Search</button>
+                </form>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-h">Active Borrowings</div>
+              <div id="activeBorrowList"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-h">Return Details</div>
+            <div class="card-b">
+              <div class="empty" id="returnEmpty">Select an active borrowing to return.</div>
+
+              <div id="returnDetails" class="hidden">
+                <!-- Summary of the selected borrowing -->
+                <div class="tool-box flush" id="returnInfo"></div>
+
+                <form id="returnForm">
+                  <div class="fgrid">
+                    <div class="field">
+                      <label>RETURN DATE</label>
+                      <input type="date" name="date" id="returnDate">
+                    </div>
+                    <div class="field">
+                      <label>TIME</label>
+                      <input type="time" name="time" id="returnTime">
+                    </div>
+                  </div>
+
+                  <div class="field">
+                    <label>CONDITION UPON RETURN</label>
+                    <!-- Keep these in sync with STATUS_AFTER_RETURN in js/config.js -->
+                    <select name="condition">
+                      <option>Good</option>
+                      <option>Fair</option>
+                      <option>Damaged</option>
+                      <option>Unsafe</option>
+                    </select>
+                  </div>
+
+                  <div class="field">
+                    <label>REMARKS</label>
+                    <textarea name="remarks" placeholder="Notes about return..."></textarea>
+                  </div>
+
+                  <button class="btn primary full">Confirm Return</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="../Script/config.js"></script>
+  <script src="../Script/helpers.js"></script>
+  <script src="../Script/seed-data.js"></script>
+  <script src="../Script/database.js"></script>
+  <script src="../Script/ui.js"></script>
+  <script src="../Script/pages/borrow.js"></script>
+</body>
+</html>

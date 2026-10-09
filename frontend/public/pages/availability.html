@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Availability — S7Gear</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../Style/style.css">
+</head>
+
+<body data-page="availability">
+  <div class="app">
+    <aside class="sidebar" id="sidebar"></aside>
+
+    <main>
+      <header class="topbar"><b>Availability</b></header>
+
+      <div class="content">
+        <h2 class="title">Tool Availability</h2>
+        <p class="subtitle" id="subtitle"></p>
+
+        <!-- Status counters (filled in by js/pages/availability.js) -->
+        <div class="stats stats-5">
+          <div class="stat stat-green"><b id="statAvailable">0</b><span>AVAILABLE</span></div>
+          <div class="stat stat-blue"><b id="statBorrowed">0</b><span>BORROWED</span></div>
+          <div class="stat stat-purple"><b id="statInspection">0</b><span>UNDER INSPECTION</span></div>
+          <div class="stat stat-orange"><b id="statMaintenance">0</b><span>UNDER MAINTENANCE</span></div>
+          <div class="stat stat-red"><b id="statUnsafe">0</b><span>UNSAFE</span></div>
+        </div>
+
+        <div class="card">
+          <!-- Search and filters -->
+          <div class="toolbar">
+            <input id="searchBox" placeholder="Search by ID, type, or borrower...">
+            <select id="statusFilter">
+              <option value="">All Statuses</option>
+              <option>Available</option>
+              <option>Borrowed</option>
+              <option>Under Inspection</option>
+              <option>Under Maintenance</option>
+              <option>Unsafe</option>
+            </select>
+            <select id="typeFilter"></select>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>TOOL ID</th>
+                  <th>TOOL TYPE</th>
+                  <th>POWER</th>
+                  <th>CONDITION</th>
+                  <th>STATUS</th>
+                  <th>CURRENT BORROWER</th>
+                  <th>EXPECTED RETURN</th>
+                  <th>LAST INSPECTION</th>
+                </tr>
+              </thead>
+              <tbody id="toolsBody"></tbody>
+            </table>
+            <div class="foot" id="toolsFoot"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="../Script/config.js"></script>
+  <script src="../Script/helpers.js"></script>
+  <script src="../Script/seed-data.js"></script>
+  <script src="../Script/database.js"></script>
+  <script src="../Script/ui.js"></script>
+  <script src="../Script/pages/availability.js"></script>
+</body>
+</html>

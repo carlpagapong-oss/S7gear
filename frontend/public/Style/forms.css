@@ -1,0 +1,88 @@
+/* =========================================================
+   FORMS — inputs, labeled fields, option buttons
+   ========================================================= */
+
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 14px;
+}
+textarea { min-height: 70px; resize: vertical; }
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid var(--primary-soft);
+  border-color: var(--primary);
+}
+
+/* A label + input pair */
+.field { margin-bottom: 14px; }
+.field label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+/* Two fields side by side */
+.fgrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 12px;
+}
+
+/* Small search form: [ input ][ button ] */
+.find-form input { flex: 1; }
+
+/* ---------- Option buttons: click one to choose (Pass/Fail, result...) ---------- */
+.seg { display: flex; gap: 6px; }
+.seg button {
+  flex: 1;
+  padding: 9px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 600;
+}
+.seg button.on-green  { background: var(--green-soft);  border-color: var(--green);  color: var(--green); }
+.seg button.on-orange { background: var(--orange-soft); border-color: var(--orange); color: var(--orange); }
+.seg button.on-red    { background: var(--red-soft);    border-color: var(--red);    color: var(--red); }
+.seg button.on-gray   { background: #f1f5f9;            border-color: var(--muted);  color: var(--muted); }
+
+/* Smaller version used inside the checklist table */
+.seg-small button {
+  flex: none;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+/* ---------- Messages ---------- */
+.note {
+  margin: 12px 0;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: var(--orange-soft);
+  color: #92400e;
+  font-size: 13px;
+}
+
+/* Small centered text under a button */
+.hint {
+  margin-top: 8px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+}
+.hint.hint-error { color: var(--red); }

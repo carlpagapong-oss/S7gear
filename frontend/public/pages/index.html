@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Home — S7Gear</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../Style/style.css">
+</head>
+
+<body data-page="home">
+  <div class="app">
+
+    <!-- Sidebar menu is built by js/ui.js -->
+    <aside class="sidebar" id="sidebar"></aside>
+
+    <main>
+      <header class="topbar"><b>Home</b></header>
+
+      <div class="content">
+        <h2 class="title">Dashboard</h2>
+        <p class="subtitle">Overview of S7Gear tool status — <span id="todayText"></span></p>
+
+        <!-- Status counters (the numbers are filled in by js/pages/home.js) -->
+        <div class="stats">
+          <div class="stat stat-total"><b id="statTotal">0</b><span>TOTAL TOOLS</span></div>
+          <div class="stat stat-green"><b id="statAvailable">0</b><span>AVAILABLE</span></div>
+          <div class="stat stat-blue"><b id="statBorrowed">0</b><span>BORROWED</span></div>
+          <div class="stat stat-orange"><b id="statMaintenance">0</b><span>MAINTENANCE</span></div>
+          <div class="stat stat-purple"><b id="statInspection">0</b><span>INSPECTION</span></div>
+          <div class="stat stat-red"><b id="statUnsafe">0</b><span>UNSAFE</span></div>
+        </div>
+
+        <div class="grid2">
+          <div class="card">
+            <div class="card-h">
+              Active Borrowings
+              <span class="badge b-blue" id="activeCount">0 active</span>
+            </div>
+            <div id="activeList"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-h">
+              Tools Due for Return
+              <span class="badge b-orange" id="dueCount">0 due soon</span>
+            </div>
+            <div id="dueList"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-h">Quick Actions</div>
+          <div class="card-b row">
+            <a class="btn" href="../pages/records.html">View Tool Records</a>
+            <a class="btn primary" href="../pages/borrow.html">Borrow a Tool</a>
+            <a class="btn" href="../pages/inspection.html">New Inspection</a>
+            <a class="btn" href="../pages/availability.html">Check Availability</a>
+            <a class="btn" href="../pages/history.html">View History</a>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <!-- Shared scripts (order matters), then this page's script -->
+  <script src="../Script/config.js"></script>
+  <script src="../Script/helpers.js"></script>
+  <script src="../Script/seed-data.js"></script>
+  <script src="../Script/database.js"></script>
+  <script src="../Script/ui.js"></script>
+  <script src="../Script/pages/home.js"></script>
+</body>
+</html>
