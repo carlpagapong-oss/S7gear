@@ -10,7 +10,7 @@ async function login(username, password) {
 
     if (response.ok) {
       sessionStorage.setItem("user_id", data.user_id);
-      window.location.href = "dashboard.html";
+      window.location.href = "index.html";
     } else {
       alert(data.message);
     }
