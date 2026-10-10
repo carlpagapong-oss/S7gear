@@ -3,6 +3,13 @@
 // Status counters + searchable / filterable tool table
 // =========================================================
 
+import { getActiveBorrows, getTools } from "../database.js";
+import { $, countByStatus, findActiveBorrow, optionsHtml, uniqueValues } from "../helpers.js";
+import { emptyRowHtml, toolRowHtml } from "../ui/tool-table.js";
+import { initLayout } from "../ui/layout.js";
+
+initLayout();
+
 let tools = [];
 let activeBorrows = [];
 

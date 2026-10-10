@@ -6,7 +6,7 @@
   <title>Tool Records — S7Gear</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../Style/style.css">
+  <link rel="stylesheet" href="../style/style.css">
 </head>
 
 <body data-page="records">
@@ -25,7 +25,7 @@
           <button class="btn primary" id="addToolButton">+ Add Tool</button>
         </div>
 
-        <!-- Tool table. Rows are filled in by js/pages/records.js -->
+        <!-- Tool table. Rows are filled in by script/pages/records.js -->
         <div class="card table-wrap">
           <table>
             <thead>
@@ -57,7 +57,7 @@
       <form id="toolForm">
         <div class="field">
           <label>TOOL ID *</label>
-          <input name="id" id="toolId" required pattern="PT-\d{3,}">
+          <input name="id" id="toolId" required pattern="[Pp][Tt]-\d{3,}" title="Format: PT-001">
         </div>
 
         <div class="field">
@@ -133,11 +133,6 @@
 
   <div id="toast" class="toast"></div>
 
-  <script src="../Script/config.js"></script>
-  <script src="../Script/helpers.js"></script>
-  <script src="../Script/seed-data.js"></script>
-  <script src="../Script/database.js"></script>
-  <script src="../Script/ui.js"></script>
-  <script src="../Script/pages/records.js"></script>
+  <script type="module" src="../script/pages/records.js"></script>
 </body>
 </html>

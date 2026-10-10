@@ -6,13 +6,13 @@
   <title>Home — S7Gear</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../Style/style.css">
+  <link rel="stylesheet" href="../style/style.css">
 </head>
 
 <body data-page="home">
   <div class="app">
 
-    <!-- Sidebar menu is built by js/ui.js -->
+    <!-- Sidebar menu is built by script/ui/ -->
     <aside class="sidebar" id="sidebar"></aside>
 
     <main>
@@ -22,7 +22,7 @@
         <h2 class="title">Dashboard</h2>
         <p class="subtitle">Overview of S7Gear tool status — <span id="todayText"></span></p>
 
-        <!-- Status counters (the numbers are filled in by js/pages/home.js) -->
+        <!-- Status counters (the numbers are filled in by script/pages/home.js) -->
         <div class="stats">
           <div class="stat stat-total"><b id="statTotal">0</b><span>TOTAL TOOLS</span></div>
           <div class="stat stat-green"><b id="statAvailable">0</b><span>AVAILABLE</span></div>
@@ -53,11 +53,11 @@
         <div class="card">
           <div class="card-h">Quick Actions</div>
           <div class="card-b row">
-            <a class="btn" href="../pages/records.html">View Tool Records</a>
-            <a class="btn primary" href="../pages/borrow.html">Borrow a Tool</a>
-            <a class="btn" href="../pages/inspection.html">New Inspection</a>
-            <a class="btn" href="../pages/availability.html">Check Availability</a>
-            <a class="btn" href="../pages/history.html">View History</a>
+            <a class="btn" href="records.html">View Tool Records</a>
+            <a class="btn primary" href="borrow.html">Borrow a Tool</a>
+            <a class="btn" href="inspection.html">New Inspection</a>
+            <a class="btn" href="availability.html">Check Availability</a>
+            <a class="btn" href="history.html">View History</a>
           </div>
         </div>
       </div>
@@ -67,11 +67,6 @@
   <div id="toast" class="toast"></div>
 
   <!-- Shared scripts (order matters), then this page's script -->
-  <script src="../Script/config.js"></script>
-  <script src="../Script/helpers.js"></script>
-  <script src="../Script/seed-data.js"></script>
-  <script src="../Script/database.js"></script>
-  <script src="../Script/ui.js"></script>
-  <script src="../Script/pages/home.js"></script>
+  <script type="module" src="../script/pages/home.js"></script>
 </body>
 </html>

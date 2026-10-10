@@ -3,6 +3,16 @@
 // Table of all tools + add / edit / view / delete
 // =========================================================
 
+import { addTool, deleteTool, getActiveBorrows, getToolHistory, getTools, updateTool } from "../database.js";
+import { $, escapeHtml, findActiveBorrow, findById, nextId, optionsHtml, uniqueValues } from "../helpers.js";
+import { conditionBadge, statusBadge } from "../ui/badges.js";
+import { closeModal, openModal } from "../ui/modal.js";
+import { toast } from "../ui/toast.js";
+import { emptyRowHtml, toolRowHtml } from "../ui/tool-table.js";
+import { initLayout } from "../ui/layout.js";
+
+initLayout();
+
 let tools = [];
 let activeBorrows = [];
 let editingToolId = null;   // null = we are adding a new tool

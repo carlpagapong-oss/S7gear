@@ -6,7 +6,7 @@
   <title>Borrowing & Return — S7Gear</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../Style/style.css">
+  <link rel="stylesheet" href="../style/style.css">
 </head>
 
 <body data-page="borrow">
@@ -123,7 +123,7 @@
 
                   <div class="field">
                     <label>CONDITION UPON RETURN</label>
-                    <!-- Keep these in sync with STATUS_AFTER_RETURN in js/config.js -->
+                    <!-- Keep these in sync with STATUS_AFTER_RETURN in script/config.js -->
                     <select name="condition">
                       <option>Good</option>
                       <option>Fair</option>
@@ -149,11 +149,6 @@
 
   <div id="toast" class="toast"></div>
 
-  <script src="../Script/config.js"></script>
-  <script src="../Script/helpers.js"></script>
-  <script src="../Script/seed-data.js"></script>
-  <script src="../Script/database.js"></script>
-  <script src="../Script/ui.js"></script>
-  <script src="../Script/pages/borrow.js"></script>
+  <script type="module" src="../script/pages/borrow.js"></script>
 </body>
 </html>

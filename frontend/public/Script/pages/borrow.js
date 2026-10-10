@@ -3,6 +3,14 @@
 // Tab 1: borrow a tool     Tab 2: return a tool
 // =========================================================
 
+import { borrowTool, getActiveBorrows, getTools, returnTool } from "../database.js";
+import { $, escapeHtml, findActiveBorrow, findById, nowTime, today } from "../helpers.js";
+import { conditionBadge, statusBadge } from "../ui/badges.js";
+import { toast } from "../ui/toast.js";
+import { initLayout } from "../ui/layout.js";
+
+initLayout();
+
 let tools = [];
 let activeBorrows = [];
 let selectedToolId = null;     // tool chosen on the Borrow tab
@@ -31,7 +39,6 @@ function showTab(name) {
 document.querySelectorAll(".tab").forEach((button) => {
   button.addEventListener("click", () => showTab(button.dataset.tab));
 });
-
 
 // =========================================================
 // TAB 1 — BORROW
@@ -71,7 +78,7 @@ function toolSummaryHtml(tool) {
 function availableToolLinksHtml() {
   const links = tools
     .filter((tool) => tool.status === "Available")
-    .map((tool) => `<a href="#" data-pick="${tool.id}" class="mono">${tool.id}</a>`)
+    .map((tool) => `<a href="#" data-pick="${escapeHtml(tool.id)}" class="mono">${escapeHtml(tool.id)}</a>`)
     .join(", ");
 
   return `<p class="info-text">Available tools: ${links}</p>`;
@@ -150,7 +157,7 @@ function showActiveBorrowList(selectedBorrow) {
     const toolType = findById(tools, borrow.toolId)?.type;
 
     return `
-      <div class="list-item click ${isSelected ? "selected" : ""}" data-borrow-id="${borrow.id}">
+      <div class="list-item click ${isSelected ? "selected" : ""}" data-borrow-id="${escapeHtml(borrow.id)}">
         <div>
           <b class="mono">${borrow.toolId}</b> — ${escapeHtml(toolType)}<br>
           <small>${escapeHtml(borrow.borrower)} · Return: ${borrow.expected}</small>

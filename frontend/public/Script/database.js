@@ -17,11 +17,15 @@
 // friendly message. The pages show that message in a toast.
 // =========================================================
 
+import { STATUS_AFTER_RETURN, STATUS_AFTER_INSPECTION } from "./config.js";
+import { SEED_DATA } from "./seed-data.js";
+import { findById, nextId } from "./helpers.js";
+
 const STORAGE_KEY = "s7gear-data-v1";
 
 // ---------- Low-level read / write (the only code that touches localStorage) ----------
 
-function readDatabase() {
+export function readDatabase() {
   const saved = localStorage.getItem(STORAGE_KEY);
   if (saved) return JSON.parse(saved);
 
@@ -29,8 +33,15 @@ function readDatabase() {
   return JSON.parse(JSON.stringify(SEED_DATA));
 }
 
-function writeDatabase(data) {
+export function writeDatabase(data) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+// Find a record or throw a friendly error (instead of crashing on undefined).
+function mustFind(list, id, label) {
+  const record = findById(list, id);
+  if (!record) throw new Error(`${label} ${id} not found.`);
+  return record;
 }
 
 // Sorting helpers ("PT-002" comes before "PT-010")
@@ -43,14 +54,17 @@ const sortNewestFirst = (a, b) => b.id.localeCompare(a.id, undefined, { numeric:
 // =========================================================
 
 /** All tools, sorted by id. */
-async function getTools() {
+export async function getTools() {
   return readDatabase().tools.sort(sortOldestFirst);
 }
 
 /** Add a new tool. Fails if the id already exists. */
-async function addTool(tool) {
+export async function addTool(tool) {
   const db = readDatabase();
 
+  if (!/^PT-\d{3,}$/.test(tool.id)) {
+    throw new Error("Tool ID must look like PT-001.");
+  }
   if (findById(db.tools, tool.id)) {
     throw new Error("Tool ID already exists.");
   }
@@ -60,17 +74,17 @@ async function addTool(tool) {
 }
 
 /** Change some fields of a tool.  updateTool("PT-001", { condition: "Fair" }) */
-async function updateTool(id, changes) {
+export async function updateTool(id, changes) {
   const db = readDatabase();
-  Object.assign(findById(db.tools, id), changes);
+  Object.assign(mustFind(db.tools, id, "Tool"), changes);
   writeDatabase(db);
 }
 
 /** Delete a tool. A borrowed tool cannot be deleted. */
-async function deleteTool(id) {
+export async function deleteTool(id) {
   const db = readDatabase();
 
-  if (findById(db.tools, id).status === "Borrowed") {
+  if (mustFind(db.tools, id, "Tool").status === "Borrowed") {
     throw new Error("Cannot delete a borrowed tool.");
   }
 
@@ -84,12 +98,12 @@ async function deleteTool(id) {
 // =========================================================
 
 /** All borrow records, newest first. */
-async function getBorrows() {
+export async function getBorrows() {
   return readDatabase().borrows.sort(sortNewestFirst);
 }
 
 /** Only the borrowings that have not been returned yet. */
-async function getActiveBorrows() {
+export async function getActiveBorrows() {
   const borrows = await getBorrows();
   return borrows.filter((borrow) => borrow.status === "Active");
 }
@@ -99,7 +113,7 @@ async function getActiveBorrows() {
  * `form` = { borrower, date, time, expected, purpose, remarks }
  * Creates the borrow record AND marks the tool as "Borrowed". Returns the tool.
  */
-async function borrowTool(toolId, form) {
+export async function borrowTool(toolId, form) {
   const db = readDatabase();
   const tool = findById(db.tools, toolId);
 
@@ -134,10 +148,17 @@ async function borrowTool(toolId, form) {
  * Closes the borrow record AND updates the tool's condition + status
  * (see STATUS_AFTER_RETURN in config.js). Returns the tool.
  */
-async function returnTool(borrowId, form) {
+export async function returnTool(borrowId, form) {
   const db = readDatabase();
-  const borrow = findById(db.borrows, borrowId);
-  const tool = findById(db.tools, borrow.toolId);
+  const borrow = mustFind(db.borrows, borrowId, "Borrowing");
+  const tool = mustFind(db.tools, borrow.toolId, "Tool");
+
+  if (borrow.status !== "Active") {
+    throw new Error("This tool was already returned.");
+  }
+  if (form.date < borrow.borrowDate.slice(0, 10)) {
+    throw new Error("Return date cannot be before the borrow date.");
+  }
 
   borrow.actual = form.date;
   borrow.condReturned = form.condition;
@@ -157,7 +178,7 @@ async function returnTool(borrowId, form) {
 // =========================================================
 
 /** All inspections, newest first. */
-async function getInspections() {
+export async function getInspections() {
   return readDatabase().inspections.sort(sortNewestFirst);
 }
 
@@ -167,9 +188,13 @@ async function getInspections() {
  * Creates the inspection record AND updates the tool's status, condition and
  * last inspection date. Returns the tool.
  */
-async function saveInspection(toolId, form) {
+export async function saveInspection(toolId, form) {
   const db = readDatabase();
-  const tool = findById(db.tools, toolId);
+  const tool = mustFind(db.tools, toolId, "Tool");
+
+  if (tool.status === "Borrowed") {
+    throw new Error("Tool is currently borrowed.");
+  }
 
   // Work out the tool's new condition from the result.
   let condition = tool.condition;
@@ -203,7 +228,7 @@ async function saveInspection(toolId, form) {
 // =========================================================
 
 /** All maintenance records, newest first. */
-async function getMaintenanceRecords() {
+export async function getMaintenanceRecords() {
   return readDatabase().maintenance.sort(sortNewestFirst);
 }
 
@@ -212,13 +237,13 @@ async function getMaintenanceRecords() {
  * `record` = { toolId, date, type, issue, action, status, next }
  * If the work is "In Progress", the tool becomes "Under Maintenance".
  */
-async function addMaintenanceRecord(record) {
+export async function addMaintenanceRecord(record) {
   const db = readDatabase();
+  const tool = mustFind(db.tools, record.toolId, "Tool");
 
   db.maintenance.push({ id: nextId(db.maintenance, "MNT"), ...record });
 
   if (record.status === "In Progress") {
-    const tool = findById(db.tools, record.toolId);
     if (tool.status !== "Borrowed") tool.status = "Under Maintenance";
   }
 
@@ -230,9 +255,9 @@ async function addMaintenanceRecord(record) {
  * The repaired tool goes back for inspection before it can be used again.
  * Returns the maintenance record.
  */
-async function completeMaintenance(id) {
+export async function completeMaintenance(id) {
   const db = readDatabase();
-  const record = findById(db.maintenance, id);
+  const record = mustFind(db.maintenance, id, "Maintenance record");
   const tool = findById(db.tools, record.toolId);
 
   record.status = "Completed";
@@ -248,7 +273,7 @@ async function completeMaintenance(id) {
 // =========================================================
 
 /** Everything that happened to one tool: { borrows, inspections, maintenance } */
-async function getToolHistory(toolId) {
+export async function getToolHistory(toolId) {
   const db = readDatabase();
   const forThisTool = (record) => record.toolId === toolId;
 

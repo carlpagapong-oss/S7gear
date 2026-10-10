@@ -2,6 +2,15 @@
 // SAFETY INSPECTION PAGE (inspection.html)
 // =========================================================
 
+import { STATUS_AFTER_INSPECTION, currentUser } from "../config.js";
+import { getInspections, getTools, saveInspection } from "../database.js";
+import { $, escapeHtml, findById, today } from "../helpers.js";
+import { conditionBadge, statusBadge } from "../ui/badges.js";
+import { toast } from "../ui/toast.js";
+import { initLayout } from "../ui/layout.js";
+
+initLayout();
+
 // The things an inspector checks. Add, remove or rename items here.
 const CHECKLIST_ITEMS = [
   "Power cable / battery condition",
@@ -115,7 +124,7 @@ function showChecklist() {
       return `<button type="button" data-item="${index}" data-choice="${choice.value}" class="${isChosen ? choice.activeClass : ""}">${choice.value}</button>`;
     }).join("");
 
-    return `<tr><td>${item}</td><td><div class="seg seg-small">${buttons}</div></td></tr>`;
+    return `<tr><td>${escapeHtml(item)}</td><td><div class="seg seg-small">${buttons}</div></td></tr>`;
   });
 
   $("#checklistBody").innerHTML = rows.join("");
@@ -164,6 +173,9 @@ $("#inspectionForm").addEventListener("submit", async (event) => {
     return toast(`Complete all ${CHECKLIST_ITEMS.length} checklist items.`);
   }
   if (!selectedResult) return toast("Choose an inspection result.");
+  if (selectedResult === "Passed" && Object.values(checklist).includes("Fail")) {
+    return toast("A checklist item failed — the result cannot be Passed.");
+  }
 
   try {
     const tool = await saveInspection(selectedToolId, { ...data, result: selectedResult });

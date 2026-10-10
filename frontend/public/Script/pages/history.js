@@ -3,6 +3,15 @@
 // Three tabs: Borrowing, Inspection, Maintenance
 // =========================================================
 
+import { addMaintenanceRecord, completeMaintenance, getBorrows, getInspections, getMaintenanceRecords, getTools } from "../database.js";
+import { $, escapeHtml, findById, optionsHtml, today } from "../helpers.js";
+import { conditionBadge, statusBadge } from "../ui/badges.js";
+import { closeModal, openModal } from "../ui/modal.js";
+import { toast } from "../ui/toast.js";
+import { initLayout } from "../ui/layout.js";
+
+initLayout();
+
 // For each tab: which statuses to offer in the filter, and how to draw one table row.
 // (The table headings are in history.html.)
 const TABS = {
@@ -93,8 +102,8 @@ $("#statusFilter").addEventListener("input", showTable);
 function idCellsHtml(record) {
   const toolType = findById(tools, record.toolId)?.type;
   return `
-    <td class="mono">${record.id}</td>
-    <td><b class="mono">${record.toolId}</b></td>
+    <td class="mono">${escapeHtml(record.id)}</td>
+    <td><b class="mono">${escapeHtml(record.toolId)}</b></td>
     <td>${escapeHtml(toolType)}</td>`;
 }
 
@@ -126,7 +135,7 @@ function inspectionRowHtml(record) {
 
 function maintenanceRowHtml(record) {
   const completeButton = record.status === "In Progress"
-    ? `<button class="btn sm" data-complete="${record.id}">Mark Complete</button>`
+    ? `<button class="btn sm" data-complete="${escapeHtml(record.id)}">Mark Complete</button>`
     : "";
 
   return `

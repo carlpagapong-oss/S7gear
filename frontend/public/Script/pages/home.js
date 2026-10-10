@@ -2,6 +2,12 @@
 // HOME PAGE (index.html) — dashboard
 // =========================================================
 
+import { getActiveBorrows, getTools } from "../database.js";
+import { $, countByStatus, daysLeft, escapeHtml, findById } from "../helpers.js";
+import { initLayout } from "../ui/layout.js";
+
+initLayout();
+
 async function showHomePage() {
   const tools = await getTools();
   const activeBorrows = await getActiveBorrows();

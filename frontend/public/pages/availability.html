@@ -6,7 +6,7 @@
   <title>Availability — S7Gear</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../Style/style.css">
+  <link rel="stylesheet" href="../style/style.css">
 </head>
 
 <body data-page="availability">
@@ -20,7 +20,7 @@
         <h2 class="title">Tool Availability</h2>
         <p class="subtitle" id="subtitle"></p>
 
-        <!-- Status counters (filled in by js/pages/availability.js) -->
+        <!-- Status counters (filled in by script/pages/availability.js) -->
         <div class="stats stats-5">
           <div class="stat stat-green"><b id="statAvailable">0</b><span>AVAILABLE</span></div>
           <div class="stat stat-blue"><b id="statBorrowed">0</b><span>BORROWED</span></div>
@@ -69,11 +69,6 @@
 
   <div id="toast" class="toast"></div>
 
-  <script src="../Script/config.js"></script>
-  <script src="../Script/helpers.js"></script>
-  <script src="../Script/seed-data.js"></script>
-  <script src="../Script/database.js"></script>
-  <script src="../Script/ui.js"></script>
-  <script src="../Script/pages/availability.js"></script>
+  <script type="module" src="../script/pages/availability.js"></script>
 </body>
 </html>

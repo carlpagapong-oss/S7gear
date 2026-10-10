@@ -3,7 +3,7 @@
 // (Once you connect a real database you can delete this file.)
 // =========================================================
 
-const SEED_DATA = {
+export const SEED_DATA = {
   tools: [
     { id: "PT-001", type: "Power Drill",   power: "Corded",   condition: "Good",    status: "Available",         lastInspection: "2026-09-10" },
     { id: "PT-002", type: "Power Drill",   power: "Cordless", condition: "Good",    status: "Borrowed",          lastInspection: "2026-09-08" },
