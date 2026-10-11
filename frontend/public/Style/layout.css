@@ -28,6 +28,40 @@
 .brand b     { display: block; color: #fff; }
 .brand small { font-size: 9px; letter-spacing: 0.1em; color: var(--muted); }
 
+.sidebar-profile {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  margin: auto 2px 6px;
+  padding: 9px 8px;
+  border: 1px solid var(--side2);
+  border-radius: 8px;
+  background: #ffffff08;
+}
+.profile-avatar {
+  width: 30px;
+  height: 30px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+}
+.profile-copy { min-width: 0; }
+.profile-copy b,
+.profile-copy small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.profile-copy b { color: #fff; font-size: 12px; }
+.profile-copy small { color: #94a3b8; font-size: 10px; }
+
 .logo {
   width: 36px;
   height: 36px;
@@ -40,6 +74,8 @@
 
 nav {
   flex: 1;
+  display: flex;
+  flex-direction: column;
   padding: 12px 8px;
 }
 nav a {
@@ -55,6 +91,19 @@ nav a {
 }
 nav a:hover  { background: var(--side2); }
 nav a.active { background: var(--primary); color: #fff; font-weight: 600; }
+nav .logout-button {
+  width: 100%;
+  margin-top: 0;
+  padding: 9px 12px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #cbd5e1;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+nav .logout-button:hover { background: var(--side2); color: #fff; }
 
 /* ---------- Main area ---------- */
 main {

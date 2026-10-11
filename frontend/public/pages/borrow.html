@@ -26,16 +26,15 @@
         </div>
 
         <!-- ================= TAB 1: BORROW ================= -->
-        <section id="borrowPanel" class="grid-side">
+        <section id="borrowPanel" class="grid-side borrow-grid">
 
           <div class="card">
             <div class="card-h">Find Tool</div>
             <div class="card-b">
-              <form id="findBorrowForm" class="row find-form">
-                <input id="borrowToolId" placeholder="e.g. PT-001">
-                <button class="btn primary">Search</button>
-              </form>
-              <!-- Selected tool summary, or the list of available tools -->
+              <div class="field">
+                <label for="borrowToolSearch">SEARCH AVAILABLE TOOLS</label>
+                <input id="borrowToolSearch" type="search" placeholder="Filter by tool ID or name">
+              </div>
               <div id="borrowToolInfo"></div>
             </div>
           </div>
@@ -45,8 +44,14 @@
             <div class="card-b">
               <form id="borrowForm">
                 <div class="field">
-                  <label>BORROWER NAME *</label>
-                  <select name="employeeId" id="borrowEmployee" required></select>
+                  <label for="borrowerName">BORROWER NAME *</label>
+                  <input
+                    type="text"
+                    name="borrowerName"
+                    id="borrowerName"
+                    placeholder="Enter borrower name"
+                    required
+                  >
                 </div>
 
                 <div class="fgrid">
@@ -68,11 +73,6 @@
                   <label>PURPOSE *</label>
                   <textarea name="purpose" placeholder="Reason for borrowing..." required></textarea>
                 </div>
-                <div class="field">
-                  <label>REMARKS</label>
-                  <textarea name="remarks" placeholder="Additional notes..."></textarea>
-                </div>
-
                 <button class="btn primary full" id="borrowSubmit" disabled>Confirm Borrowing</button>
                 <p class="hint" id="borrowHint"></p>
               </form>
@@ -81,7 +81,7 @@
         </section>
 
         <!-- ================= TAB 2: RETURN ================= -->
-        <section id="returnPanel" class="grid-side hidden">
+        <section id="returnPanel" class="grid-side borrow-grid hidden">
 
           <div>
             <div class="card mb">
@@ -145,6 +145,23 @@
         </section>
       </div>
     </main>
+  </div>
+
+  <div class="modal hidden" id="borrowToolDetailsModal">
+    <div class="modal-card">
+      <h3 id="borrowToolDetailsTitle"></h3>
+      <img id="borrowToolDetailsImage" class="tool-details-image" alt="Tool picture" hidden>
+      <div class="kv"><span class="kv-label">Brand</span><div id="borrowToolDetailsBrand"></div></div>
+      <div class="kv"><span class="kv-label">Model</span><div id="borrowToolDetailsModel"></div></div>
+      <div class="kv"><span class="kv-label">Power</span><div id="borrowToolDetailsPower"></div></div>
+      <div class="kv"><span class="kv-label">Category</span><div id="borrowToolDetailsCategory"></div></div>
+      <div class="kv"><span class="kv-label">Condition</span><div id="borrowToolDetailsCondition"></div></div>
+      <div class="kv"><span class="kv-label">Status</span><div id="borrowToolDetailsStatus"></div></div>
+      <div class="kv"><span class="kv-label">Last Inspection</span><div id="borrowToolDetailsInspection"></div></div>
+      <div class="row end mt">
+        <button class="btn" data-close-modal>Close</button>
+      </div>
+    </div>
   </div>
 
   <div id="toast" class="toast"></div>

@@ -2,6 +2,8 @@ const API_BASE_URL = "http://127.0.0.1:5000/api";
 
 export async function apiRequest(path, options = {}) {
   const headers = new Headers(options.headers || {});
+  const token = sessionStorage.getItem("auth_token");
+  if (token) headers.set("Authorization", `Bearer ${token}`);
   const isFormData = typeof FormData !== "undefined" && options.body instanceof FormData;
   if (options.body && !isFormData && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
@@ -23,10 +25,18 @@ export async function apiRequest(path, options = {}) {
   }
 
   if (!response.ok) {
+    if (response.status === 401) {
+      sessionStorage.clear();
+      window.location.replace(new URL("login.html", window.location.href).href);
+    }
     throw new Error(data?.message || `Request failed (${response.status}).`);
   }
 
   return data;
+}
+
+export function logout() {
+  return apiRequest("/session", { method: "DELETE" });
 }
 
 export function postJson(path, value) {

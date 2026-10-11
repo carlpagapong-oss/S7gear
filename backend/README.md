@@ -21,16 +21,27 @@ IDs to the frontend while storing the existing numeric foreign keys. Existing
 records are retained; deleting a tool with history is rejected.
 
 There is no public registration endpoint. Accounts must already exist in
-`users`. To set or reset a user's password securely, run from `src`:
+`users`. The borrowing form accepts a free-form borrower name, including
+people who are not registered users. Before using that feature, apply
+`migrations/20261011_allow_external_borrower_names.sql` to the existing
+database. It backfills names for existing borrowings and makes `borrower_id`
+optional for new ones. To set or reset a user's password securely, run from `src`:
 
 ```sh
 python hash_password.py
 ```
 
 The script updates the password hash for an existing username; it does not
-create users. Borrowers and inspectors are selected from active `users`.
+create users. Inspectors are selected from active `users`.
 Maintenance actions are stored in `maintenance_records.parts_replaced`, the
 closest corresponding action field in the current schema.
+
+The login API issues an in-memory bearer session for frontend API requests.
+Sessions are cleared when the backend restarts. Safety Officer accounts are
+limited to tool listing, inspections, maintenance, and sign-out; their frontend
+navigation opens a dedicated safety dashboard. Other roles retain the general
+tool-management navigation, except Tool Manager accounts do not have access to
+the safety inspection or maintenance pages and APIs.
 
 Start Flask from `backend/src`:
 

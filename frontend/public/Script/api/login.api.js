@@ -12,7 +12,11 @@ async function login(username, password) {
       sessionStorage.setItem("user_id", data.user_id);
       sessionStorage.setItem("employee_id", data.employee_id);
       sessionStorage.setItem("employee_name", data.employee_name);
-      window.location.href = "index.html";
+      sessionStorage.setItem("role", data.role);
+      sessionStorage.setItem("auth_token", data.token);
+      window.location.href = data.role.toLowerCase() === "safety officer"
+        ? "safety-home.html"
+        : "index.html";
     } else {
       alert(data.message);
     }

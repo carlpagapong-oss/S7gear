@@ -1,7 +1,7 @@
 from datetime import date
 
 import mysql.connector
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, g, jsonify, request
 
 from routes.api_helpers import (
     database_errors,
@@ -54,14 +54,20 @@ def get_inspections():
 @database_errors
 def save_inspection():
     data = json_object(request.get_json(silent=True))
-    if data is None or missing_fields(
-        data, "toolId", "inspectorId", "date", "result"
-    ):
+    is_safety_officer = g.current_user["role"].strip().lower() == "safety officer"
+    required_fields = ["toolId", "date", "result"]
+    if not is_safety_officer:
+        required_fields.append("inspectorId")
+    if data is None or missing_fields(data, *required_fields):
         return jsonify({"message": "Complete all required inspection fields."}), 400
     if data["result"] not in STATUS_AFTER_INSPECTION:
         return jsonify({"message": "Select a valid inspection result."}), 400
     try:
-        inspector_id = int(data["inspectorId"])
+        inspector_id = (
+            g.current_user["user_id"]
+            if is_safety_officer
+            else int(data["inspectorId"])
+        )
         inspection_date = date.fromisoformat(data["date"])
     except (TypeError, ValueError):
         return jsonify({"message": "Enter a valid inspector and inspection date."}), 400

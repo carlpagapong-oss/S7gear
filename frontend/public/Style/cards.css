@@ -26,6 +26,7 @@
   gap: 12px;
   margin-bottom: 20px;
 }
+.stats.stats-4 { grid-template-columns: repeat(4, 1fr); }
 .stats.stats-5 { grid-template-columns: repeat(5, 1fr); }
 
 .stat {
@@ -58,6 +59,8 @@
 /* ---------- Page grids ---------- */
 .grid2     { display: grid; grid-template-columns: 1fr 1fr;     gap: 14px; margin-bottom: 16px; }
 .grid-side { display: grid; grid-template-columns: 320px 1fr;   gap: 14px; }
+.borrow-grid { grid-template-columns: minmax(0, 1.7fr) minmax(320px, 1fr); }
+.inspection-grid { grid-template-columns: minmax(0, 1.7fr) minmax(360px, 1fr); }
 
 /* ---------- Lists inside cards ---------- */
 .list-item {

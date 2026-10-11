@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Safety Board — S7Gear</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../style/style.css">
+</head>
+<body data-page="safety-home">
+  <div class="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <main>
+      <header class="topbar"><b>Safety Officer Board</b></header>
+      <div class="content">
+        <h2 class="title">Safety Overview</h2>
+        <p class="subtitle">Inspection and maintenance status — <span id="todayText"></span></p>
+
+        <div class="stats stats-4">
+          <div class="stat stat-purple"><b id="inspectionDueCount">0</b><span>TOOLS NEEDING INSPECTION</span></div>
+          <div class="stat stat-red"><b id="unsafeCount">0</b><span>UNSAFE TOOLS</span></div>
+          <div class="stat stat-orange"><b id="maintenanceCount">0</b><span>ACTIVE MAINTENANCE</span></div>
+          <div class="stat stat-green"><b id="inspectionCount">0</b><span>INSPECTIONS RECORDED</span></div>
+        </div>
+
+        <div class="grid2">
+          <div class="card">
+            <div class="card-h">Recent Inspections</div>
+            <div id="safetyRecentInspections"></div>
+          </div>
+          <div class="card">
+            <div class="card-h">Maintenance Queue</div>
+            <div id="safetyMaintenanceQueue"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-h">Safety Actions</div>
+          <div class="card-b row">
+            <a class="btn primary" href="inspection.html">Start Safety Inspection</a>
+            <a class="btn" href="maintenance.html">Manage Maintenance</a>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  <div id="toast" class="toast"></div>
+  <script type="module" src="../script/pages/safety-home.js"></script>
+</body>
+</html>

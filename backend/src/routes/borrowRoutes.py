@@ -23,7 +23,8 @@ STATUS_AFTER_RETURN = {
 
 BORROW_SELECT = """
     SELECT bi.borrowing_item_id, t.tool_code AS tool_id,
-           b.borrower_id AS employee_id, u.full_name AS employee_name,
+           b.borrower_id AS employee_id,
+           COALESCE(b.borrower_name, u.full_name) AS employee_name,
            b.borrowed_at AS borrow_date, b.expected_return_at AS expected,
            bi.returned_at AS actual,
            bi.condition_when_returned AS cond_returned,
@@ -31,7 +32,7 @@ BORROW_SELECT = """
            b.purpose, CONCAT_WS(' | ', b.remarks, bi.remarks) AS remarks
     FROM borrowing_items bi
     JOIN borrowings b ON b.borrowing_id = bi.borrowing_id
-    JOIN users u ON u.user_id = b.borrower_id
+    LEFT JOIN users u ON u.user_id = b.borrower_id
     JOIN tools t ON t.tool_id = bi.tool_id
 """
 
@@ -67,11 +68,15 @@ def get_borrows():
 def borrow_tool():
     data = json_object(request.get_json(silent=True))
     if data is None or missing_fields(
-        data, "toolId", "employeeId", "date", "time", "expected", "purpose"
+        data, "toolId", "borrowerName", "date", "time", "expected", "purpose"
     ):
         return jsonify({"message": "Complete all required borrowing fields."}), 400
+    if not isinstance(data["borrowerName"], str) or not data["borrowerName"].strip():
+        return jsonify({"message": "Enter a borrower name."}), 400
+    borrower_name = data["borrowerName"].strip()
+    if len(borrower_name) > 255:
+        return jsonify({"message": "Borrower name must be 255 characters or fewer."}), 400
     try:
-        user_id = int(data["employeeId"])
         borrowed_at = datetime.strptime(
             f"{data['date']} {data['time']}", "%Y-%m-%d %H:%M"
         )
@@ -97,23 +102,12 @@ def borrow_tool():
             return jsonify({"message": "Select an available tool first."}), 409
         cursor.execute(
             """
-            SELECT user_id FROM users
-            WHERE user_id = %s AND account_status = 'Active'
-            """,
-            (user_id,),
-        )
-        if cursor.fetchone() is None:
-            connection.rollback()
-            return jsonify({"message": "Select an active user as the borrower."}), 400
-
-        cursor.execute(
-            """
             INSERT INTO borrowings
-              (borrower_id, borrowed_at, expected_return_at, status, purpose, remarks)
-            VALUES (%s, %s, %s, 'Borrowed', %s, %s)
+              (borrower_id, borrower_name, borrowed_at, expected_return_at, status, purpose, remarks)
+            VALUES (NULL, %s, %s, %s, 'Borrowed', %s, %s)
             """,
             (
-                user_id,
+                borrower_name,
                 borrowed_at,
                 expected_return,
                 data["purpose"],

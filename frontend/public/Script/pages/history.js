@@ -3,10 +3,9 @@
 // Three tabs: Borrowing, Inspection, Maintenance
 // =========================================================
 
-import { addMaintenanceRecord, completeMaintenance, getBorrows, getInspections, getMaintenanceRecords, getTools } from "../database.js";
-import { $, escapeHtml, findById, optionsHtml, today } from "../helpers.js";
+import { completeMaintenance, getBorrows, getInspections, getMaintenanceRecords, getTools } from "../database.js";
+import { $, escapeHtml, findById, optionsHtml } from "../helpers.js";
 import { conditionBadge, statusBadge } from "../ui/badges.js";
-import { closeModal, openModal } from "../ui/modal.js";
 import { toast } from "../ui/toast.js";
 import { initLayout } from "../ui/layout.js";
 
@@ -43,10 +42,6 @@ async function refreshPage() {
   records.inspection = await getInspections();
   records.maintenance = await getMaintenanceRecords();
 
-  $("#countBorrow").textContent = records.borrow.length;
-  $("#countInspection").textContent = records.inspection.length;
-  $("#countMaintenance").textContent = records.maintenance.length;
-
   showTable();
 }
 
@@ -65,7 +60,6 @@ function showTab(name) {
   // Each tab has its own list of statuses; start with empty filters.
   $("#statusFilter").innerHTML = `<option value="">All Statuses</option>` + optionsHtml(TABS[name].statuses);
   $("#searchBox").value = "";
-  $("#addMaintenanceButton").classList.toggle("hidden", name !== "maintenance");
 
   showTable();
 }
@@ -159,30 +153,6 @@ $("#body-maintenance").addEventListener("click", async (event) => {
     const record = await completeMaintenance(button.dataset.complete);
     await refreshPage();
     toast(`${record.id} completed. ${record.toolId} sent for inspection.`);
-  } catch (error) {
-    toast(error.message);
-  }
-});
-
-// ---------- Add maintenance record ----------
-$("#addMaintenanceButton").addEventListener("click", () => {
-  const options = tools.map((tool) => `<option value="${tool.id}">${tool.id} — ${escapeHtml(tool.type)}</option>`);
-
-  $("#maintenanceForm").reset();
-  $("#maintenanceTool").innerHTML = options.join("");
-  $("#maintenanceDate").value = today();
-  openModal("maintenanceModal");
-});
-
-$("#maintenanceForm").addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const data = Object.fromEntries(new FormData(event.target));
-
-  try {
-    await addMaintenanceRecord(data);
-    closeModal("maintenanceModal");
-    await refreshPage();
-    toast("Maintenance record added.");
   } catch (error) {
     toast(error.message);
   }

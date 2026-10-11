@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request
 from werkzeug.security import check_password_hash
 
+from auth_sessions import create_session
 from routes.api_helpers import database_errors, open_connection
 
 login_bp = Blueprint("login", __name__)
@@ -57,4 +58,5 @@ def login():
         "employee_name": user["employee_name"],
         "username": user["username"],
         "role": user["role_name"],
+        "token": create_session(user["user_id"], user["role_name"]),
     })

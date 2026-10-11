@@ -341,7 +341,8 @@ def get_tool_history(tool_code):
         cursor.execute(
             """
             SELECT bi.borrowing_item_id, t.tool_code AS tool_id,
-                   b.borrower_id AS employee_id, u.full_name AS employee_name,
+                   b.borrower_id AS employee_id,
+                   COALESCE(b.borrower_name, u.full_name) AS employee_name,
                    b.borrowed_at AS borrow_date, b.expected_return_at AS expected,
                    bi.returned_at AS actual,
                    bi.condition_when_returned AS cond_returned,
@@ -349,7 +350,7 @@ def get_tool_history(tool_code):
                    b.purpose, CONCAT_WS(' | ', b.remarks, bi.remarks) AS remarks
             FROM borrowing_items bi
             JOIN borrowings b ON b.borrowing_id = bi.borrowing_id
-            JOIN users u ON u.user_id = b.borrower_id
+            LEFT JOIN users u ON u.user_id = b.borrower_id
             JOIN tools t ON t.tool_id = bi.tool_id
             WHERE bi.tool_id = %s
             ORDER BY bi.borrowing_item_id DESC

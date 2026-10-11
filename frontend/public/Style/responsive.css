@@ -7,6 +7,7 @@
 /* ---------- Tablet (1000px and below) ---------- */
 @media (max-width: 1000px) {
   .stats,
+  .stats.stats-4,
   .stats.stats-5 { grid-template-columns: repeat(3, 1fr); }
 
   /* Two-column pages become one column */
@@ -24,12 +25,18 @@
     z-index: 20;
     width: 100%;
   }
+  .sidebar-profile {
+    flex: none;
+    margin: 0;
+    max-width: 260px;
+  }
   .brand { padding: 10px 14px; border-bottom: 0; }
 
   /* Menu becomes one scrollable row */
   nav {
     flex: none;
     display: flex;
+    flex-direction: row;
     gap: 4px;
     padding: 0 8px 8px;
     overflow-x: auto;
@@ -37,6 +44,12 @@
   nav a {
     flex: none;
     margin-bottom: 0;
+    white-space: nowrap;
+  }
+  nav .logout-button {
+    flex: none;
+    width: auto;
+    margin-top: 0;
     white-space: nowrap;
   }
 
@@ -50,6 +63,7 @@
 
   /* Counters: 2 per row */
   .stats,
+  .stats.stats-4,
   .stats.stats-5 { grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .stat   { padding: 12px; }
   .stat b { font-size: 22px; }

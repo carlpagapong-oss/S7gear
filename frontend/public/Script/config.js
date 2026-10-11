@@ -6,6 +6,7 @@
 export const currentUser = {
   id: sessionStorage.getItem("employee_id") || "",
   name: sessionStorage.getItem("employee_name") || "",
+  role: sessionStorage.getItem("role") || "",
 };
 
 // When a tool is returned, its CONDITION decides its new STATUS.

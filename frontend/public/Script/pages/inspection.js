@@ -46,14 +46,16 @@ let selectedResult = "";     // "Passed" | "Needs Maintenance" | "Failed / Unsaf
 
 // ---------- Load data and show everything ----------
 async function refreshPage() {
+  const isSafetyOfficer = currentUser.role.trim().toLowerCase() === "safety officer";
   const [loadedTools, inspections, employees] = await Promise.all([
     getTools(),
     getInspections(),
-    getEmployees(),
+    isSafetyOfficer ? Promise.resolve([]) : getEmployees(),
   ]);
   tools = loadedTools;
   showInspectorOptions(employees);
 
+  showToolList();
   showSelectedTool();
   showChecklist();
   showResultButtons();
@@ -73,23 +75,64 @@ function setFormDefaults() {
 
 function showInspectorOptions(employees) {
   const select = $("#inspector");
-  select.innerHTML = `<option value="">Select an inspector</option>` + employees
-    .map((employee) => `<option value="${employee.id}">${escapeHtml(employee.name)}</option>`)
-    .join("");
-  select.value = currentUser.id;
+  if (currentUser.role.trim().toLowerCase() === "safety officer") {
+    select.innerHTML = `<option value="${escapeHtml(currentUser.id)}">${escapeHtml(currentUser.name)}</option>`;
+    select.value = currentUser.id;
+    select.disabled = true;
+  } else {
+    select.disabled = false;
+    select.innerHTML = `<option value="">Select an inspector</option>` + employees
+      .map((employee) => `<option value="${employee.id}">${escapeHtml(employee.name)}</option>`)
+      .join("");
+    select.value = currentUser.id;
+  }
 }
 
-// ---------- Find a tool ----------
-$("#findForm").addEventListener("submit", (event) => {
-  event.preventDefault();
-  const id = $("#findToolId").value.trim().toUpperCase();
-  const tool = findById(tools, id);
+function showToolList() {
+  const query = $("#findToolId").value.trim().toLowerCase();
+  const matches = tools.filter((tool) =>
+    `${tool.id} ${tool.type} ${tool.category}`.toLowerCase().includes(query),
+  );
+  if (matches.length === 0) {
+    $("#inspectionToolList").innerHTML = `<div class="empty">${query ? "No tools match your search." : "No tools registered."}</div>`;
+    return;
+  }
 
-  if (!tool) return toast(`Tool ${id} not found.`);
-  if (tool.status === "Borrowed") return toast("Tool is currently borrowed.");
+  const rows = matches.map((tool) => `
+    <tr class="${tool.id === selectedToolId ? "selected" : ""}">
+      <td class="mono">${escapeHtml(tool.id)}</td>
+      <td>${escapeHtml(tool.type)}</td>
+      <td>${conditionBadge(tool.condition)}</td>
+      <td>${statusBadge(tool.status)}</td>
+      <td>
+        <button
+          type="button"
+          class="btn sm ${tool.id === selectedToolId ? "primary" : ""}"
+          data-inspect-tool="${escapeHtml(tool.id)}"
+          ${tool.status === "Borrowed" ? "disabled" : ""}
+        >${tool.status === "Borrowed" ? "Borrowed" : tool.id === selectedToolId ? "Selected" : "Inspect"}</button>
+      </td>
+    </tr>`).join("");
+  $("#inspectionToolList").innerHTML = `
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>TOOL ID</th><th>TOOL</th><th>CONDITION</th><th>STATUS</th><th>ACTION</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
+$("#findToolId").addEventListener("input", showToolList);
+$("#inspectionToolList").addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-inspect-tool]");
+  if (!button) return;
+  const id = button.dataset.inspectTool;
+  const tool = findById(tools, id);
+  if (!tool || tool.status === "Borrowed") return;
 
   resetInspection();        // start a fresh checklist for this tool
   selectedToolId = id;
+  showToolList();
   showSelectedTool();
   showChecklist();
   showResultButtons();

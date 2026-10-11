@@ -27,6 +27,7 @@ td {
   vertical-align: top;
 }
 tbody tr:hover { background: #fafbfd; }
+tbody tr.selected { background: #eff6ff; }
 
 /* "10 tools" line under a table */
 .foot {

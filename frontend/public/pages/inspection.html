@@ -20,17 +20,18 @@
         <h2 class="title">Safety Inspection</h2>
         <p class="subtitle">Record a safety inspection for a power tool — <span id="todayText"></span></p>
 
-        <div class="grid-side">
+        <div class="grid-side inspection-grid">
 
-          <!-- ============ Left column ============ -->
-          <div>
+          <!-- ============ Tool list and inspection history ============ -->
+          <div class="inspection-tools-column">
             <div class="card mb">
               <div class="card-h">Find Tool</div>
               <div class="card-b">
-                <form id="findForm" class="row find-form">
-                  <input id="findToolId" placeholder="e.g. PT-001">
-                  <button class="btn primary">Go</button>
-                </form>
+                <div class="field">
+                  <label for="findToolId">SEARCH TOOLS</label>
+                  <input id="findToolId" type="search" placeholder="Search by tool ID, type, or category">
+                </div>
+                <div id="inspectionToolList"></div>
                 <!-- Selected tool summary -->
                 <div id="selectedTool"></div>
               </div>
@@ -42,7 +43,7 @@
             </div>
           </div>
 
-          <!-- ============ Right column ============ -->
+          <!-- ============ Checklist and inspection details ============ -->
           <div>
             <div class="card mb">
               <div class="card-h">

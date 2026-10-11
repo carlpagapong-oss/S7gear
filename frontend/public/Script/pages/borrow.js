@@ -4,9 +4,9 @@
 // =========================================================
 
 import { borrowTool, getActiveBorrows, getTools, returnTool } from "../database.js";
-import { getEmployees } from "../api/employees.api.js";
 import { $, escapeHtml, findActiveBorrow, findById, nowTime, today } from "../helpers.js";
 import { conditionBadge, statusBadge } from "../ui/badges.js";
+import { openModal } from "../ui/modal.js";
 import { toast } from "../ui/toast.js";
 import { initLayout } from "../ui/layout.js";
 
@@ -14,19 +14,16 @@ initLayout();
 
 let tools = [];
 let activeBorrows = [];
-let employees = [];
 let selectedToolId = null;     // tool chosen on the Borrow tab
 let selectedBorrowId = null;   // borrowing chosen on the Return tab
 
 // ---------- Load data and show everything ----------
 async function refreshPage() {
-  [tools, activeBorrows, employees] = await Promise.all([
+  [tools, activeBorrows] = await Promise.all([
     getTools(),
     getActiveBorrows(),
-    getEmployees(),
   ]);
 
-  showEmployeeOptions();
   $("#subtitle").textContent = `${activeBorrows.length} active borrowings`;
   showBorrowTab();
   showReturnTab();
@@ -53,57 +50,54 @@ document.querySelectorAll(".tab").forEach((button) => {
 function showBorrowTab() {
   const tool = findById(tools, selectedToolId);
   const canBorrow = Boolean(tool)
-    && tool.status === "Available"
-    && employees.length > 0;
+    && tool.status === "Available";
 
-  $("#borrowToolId").value = tool ? tool.id : "";
-  $("#borrowToolInfo").innerHTML = tool ? toolSummaryHtml(tool) : availableToolLinksHtml();
+  $("#borrowToolInfo").innerHTML = availableToolsTableHtml();
   $("#borrowSubmit").disabled = !canBorrow;
 
   // Message under the button
   let hint = "";
-  if (!tool) hint = "Search for an available tool first.";
+  if (!tool) hint = "Select an available tool from the table.";
   else if (!canBorrow) hint = `This tool is ${tool.status.toLowerCase()} and cannot be borrowed.`;
-  if (tool?.status === "Available" && employees.length === 0) {
-    hint = "Add an employee before creating a borrowing.";
-  }
 
   $("#borrowHint").textContent = hint;
   $("#borrowHint").classList.toggle("hint-error", Boolean(tool) && !canBorrow);
 }
 
-function showEmployeeOptions() {
-  const select = $("#borrowEmployee");
-  const currentValue = select.value;
-  select.innerHTML = `<option value="">Select an employee</option>` + employees
-    .map((employee) => `<option value="${employee.id}">${escapeHtml(employee.name)}</option>`)
-    .join("");
-  if (employees.some((employee) => String(employee.id) === currentValue)) {
-    select.value = currentValue;
+function availableToolsTableHtml() {
+  const query = $("#borrowToolSearch").value.trim().toLowerCase();
+  const availableTools = tools.filter((tool) => tool.status === "Available")
+    .filter((tool) => `${tool.id} ${tool.type} ${tool.category}`.toLowerCase().includes(query));
+
+  if (availableTools.length === 0) {
+    return `<div class="empty">${query ? "No available tools match your search." : "No tools are currently available."}</div>`;
   }
-}
 
-function toolSummaryHtml(tool) {
+  const rows = availableTools.map((tool) => `
+    <tr class="${tool.id === selectedToolId ? "selected" : ""}">
+      <td class="mono">${escapeHtml(tool.id)}</td>
+      <td>${escapeHtml(tool.type)}</td>
+      <td>${conditionBadge(tool.condition)}</td>
+      <td>
+        <button
+          type="button"
+          class="btn sm ${tool.id === selectedToolId ? "primary" : ""}"
+          data-pick="${escapeHtml(tool.id)}"
+          aria-pressed="${tool.id === selectedToolId}"
+        >${tool.id === selectedToolId ? "Selected" : "Select"}</button>
+        <button type="button" class="btn sm" data-view="${escapeHtml(tool.id)}">View</button>
+      </td>
+    </tr>`).join("");
+
   return `
-    <div class="tool-box">
-      <span class="mono t-muted">${tool.id}</span>
-      <h3>${escapeHtml(tool.type)}</h3>
-      ${statusBadge(tool.status, true)}
-      <div class="mt-sm">
-        <div class="kv"><span class="kv-label">Power Type</span><div>${tool.power}</div></div>
-        <div class="kv"><span class="kv-label">Condition</span><div>${conditionBadge(tool.condition)}</div></div>
-        <div class="kv"><span class="kv-label">Last Inspection</span><div>${tool.lastInspection || "—"}</div></div>
-      </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>TOOL ID</th><th>TOOL</th><th>CONDITION</th><th>ACTIONS</th></tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
     </div>`;
-}
-
-function availableToolLinksHtml() {
-  const links = tools
-    .filter((tool) => tool.status === "Available")
-    .map((tool) => `<a href="#" data-pick="${escapeHtml(tool.id)}" class="mono">${escapeHtml(tool.id)}</a>`)
-    .join(", ");
-
-  return `<p class="info-text">Available tools: ${links}</p>`;
 }
 
 // Date and time start as "now"; the expected return date can't be in the past.
@@ -113,24 +107,20 @@ function setBorrowFormDefaults() {
   $("#borrowExpected").min = today();
 }
 
-// Search box
-$("#findBorrowForm").addEventListener("submit", (event) => {
-  event.preventDefault();
-  const id = $("#borrowToolId").value.trim().toUpperCase();
+$("#borrowToolSearch").addEventListener("input", showBorrowTab);
 
-  if (!findById(tools, id)) return toast(`Tool ${id} not found.`);
-
-  selectedToolId = id;
-  showBorrowTab();
-});
-
-// Clicking one of the "Available tools: PT-001, PT-003 ..." links
+// Select an available tool from the table.
 $("#borrowToolInfo").addEventListener("click", (event) => {
-  const link = event.target.closest("a[data-pick]");
-  if (!link) return;
+  const viewButton = event.target.closest("button[data-view]");
+  if (viewButton) {
+    showToolDetails(findById(tools, viewButton.dataset.view));
+    return;
+  }
 
-  event.preventDefault();
-  selectedToolId = link.dataset.pick;
+  const button = event.target.closest("button[data-pick]");
+  if (!button) return;
+
+  selectedToolId = button.dataset.pick;
   showBorrowTab();
 });
 
@@ -138,14 +128,16 @@ $("#borrowToolInfo").addEventListener("click", (event) => {
 $("#borrowForm").addEventListener("submit", async (event) => {
   event.preventDefault();
   const form = event.target;
-  const data = Object.fromEntries(new FormData(form));
-  const employee = employees.find((item) => String(item.id) === data.employeeId);
-  if (!employee) return toast("Select an employee.");
+  const { borrowerName: enteredBorrowerName, ...borrowingData } = Object.fromEntries(new FormData(form));
+  const borrowerName = enteredBorrowerName.trim();
 
   try {
-    const tool = await borrowTool(selectedToolId, data);
+    const tool = await borrowTool(selectedToolId, {
+      ...borrowingData,
+      borrowerName,
+    });
 
-    toast(`${tool.id} borrowed by ${employee.name}.`);
+    toast(`${tool.id} borrowed by ${borrowerName}.`);
     selectedToolId = null;
     form.reset();
     setBorrowFormDefaults();
@@ -154,6 +146,23 @@ $("#borrowForm").addEventListener("submit", async (event) => {
     toast(error.message);
   }
 });
+
+function showToolDetails(tool) {
+  if (!tool) return;
+  $("#borrowToolDetailsTitle").textContent = `${tool.id} — ${tool.type}`;
+  const image = $("#borrowToolDetailsImage");
+  image.hidden = !tool.imagePath;
+  if (tool.imagePath) image.src = tool.imagePath;
+  else image.removeAttribute("src");
+  $("#borrowToolDetailsBrand").textContent = tool.brand || "—";
+  $("#borrowToolDetailsModel").textContent = tool.model || "—";
+  $("#borrowToolDetailsPower").textContent = tool.power || "—";
+  $("#borrowToolDetailsCategory").textContent = tool.category || "—";
+  $("#borrowToolDetailsCondition").innerHTML = conditionBadge(tool.condition);
+  $("#borrowToolDetailsStatus").innerHTML = statusBadge(tool.status, true);
+  $("#borrowToolDetailsInspection").textContent = tool.lastInspection || "—";
+  openModal("borrowToolDetailsModal");
+}
 
 
 // =========================================================
