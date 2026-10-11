@@ -4,6 +4,7 @@
 
 import { STATUS_AFTER_INSPECTION, currentUser } from "../config.js";
 import { getInspections, getTools, saveInspection } from "../database.js";
+import { getEmployees } from "../api/employees.api.js";
 import { $, escapeHtml, findById, today } from "../helpers.js";
 import { conditionBadge, statusBadge } from "../ui/badges.js";
 import { toast } from "../ui/toast.js";
@@ -45,8 +46,13 @@ let selectedResult = "";     // "Passed" | "Needs Maintenance" | "Failed / Unsaf
 
 // ---------- Load data and show everything ----------
 async function refreshPage() {
-  tools = await getTools();
-  const inspections = await getInspections();
+  const [loadedTools, inspections, employees] = await Promise.all([
+    getTools(),
+    getInspections(),
+    getEmployees(),
+  ]);
+  tools = loadedTools;
+  showInspectorOptions(employees);
 
   showSelectedTool();
   showChecklist();
@@ -61,8 +67,16 @@ function resetInspection() {
 }
 
 function setFormDefaults() {
-  $("#inspector").value = currentUser.name;
+  $("#inspector").value = currentUser.id;
   $("#inspectionDate").value = today();
+}
+
+function showInspectorOptions(employees) {
+  const select = $("#inspector");
+  select.innerHTML = `<option value="">Select an inspector</option>` + employees
+    .map((employee) => `<option value="${employee.id}">${escapeHtml(employee.name)}</option>`)
+    .join("");
+  select.value = currentUser.id;
 }
 
 // ---------- Find a tool ----------

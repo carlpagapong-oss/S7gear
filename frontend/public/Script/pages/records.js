@@ -59,10 +59,11 @@ function openToolForm(tool) {
 
   if (isEditing) {
     $("#toolType").value = tool.type;
+    $("#toolCategory").value = tool.category;
     $("#toolPower").value = tool.power;
+    $("#toolImagePath").value = tool.imagePath || "";
     $("#toolCondition").value = tool.condition;
     $("#toolStatus").value = tool.status;
-    $("#toolLastInspection").value = tool.lastInspection;
   }
 
   // A borrowed tool's status can only change through Borrowing & Return.
@@ -79,16 +80,23 @@ $("#toolForm").addEventListener("submit", async (event) => {
     if (editingToolId) {
       const changes = {
         type: data.type.trim(),
+        category: data.category.trim(),
         power: data.power,
+        imagePath: data.imagePath.trim(),
         condition: data.condition,
-        lastInspection: data.lastInspection,
       };
       // A disabled field is not sent by the browser, so status is missing for borrowed tools.
       if (data.status) changes.status = data.status;
 
       await updateTool(editingToolId, changes);
     } else {
-      await addTool({ ...data, id: data.id.toUpperCase(), type: data.type.trim() });
+      await addTool({
+        ...data,
+        id: data.id.toUpperCase(),
+        type: data.type.trim(),
+        category: data.category.trim(),
+        imagePath: data.imagePath.trim(),
+      });
     }
 
     closeModal("toolModal");
@@ -123,6 +131,7 @@ async function openToolDetails(id) {
 
   $("#detailsTitle").textContent = `${tool.id} — ${tool.type}`;
   $("#detailsPower").textContent = tool.power;
+  $("#detailsCategory").textContent = tool.category;
   $("#detailsCondition").innerHTML = conditionBadge(tool.condition);
   $("#detailsStatus").innerHTML = statusBadge(tool.status, true);
   $("#detailsBorrower").textContent = borrow ? borrow.borrower : "—";

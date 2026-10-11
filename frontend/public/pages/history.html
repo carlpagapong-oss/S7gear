@@ -69,7 +69,7 @@
               <thead>
                 <tr>
                   <th>RECORD ID</th><th>TOOL ID</th><th>TOOL TYPE</th><th>DATE</th><th>TYPE</th>
-                  <th>ISSUE</th><th>ACTION TAKEN</th><th>STATUS</th><th>NEXT SERVICE</th><th></th>
+                  <th>ISSUE</th><th>ACTION TAKEN / PARTS</th><th>STATUS</th><th></th>
                 </tr>
               </thead>
               <tbody id="body-maintenance"></tbody>
@@ -117,18 +117,12 @@
           <textarea name="action" required></textarea>
         </div>
 
-        <div class="fgrid">
-          <div class="field">
-            <label>STATUS</label>
-            <select name="status">
-              <option>In Progress</option>
-              <option>Completed</option>
-            </select>
-          </div>
-          <div class="field">
-            <label>NEXT SERVICE</label>
-            <input type="date" name="next">
-          </div>
+        <div class="field">
+          <label>STATUS</label>
+          <select name="status">
+            <option>In Progress</option>
+            <option>Completed</option>
+          </select>
         </div>
 
         <div class="row end">

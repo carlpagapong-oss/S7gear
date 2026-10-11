@@ -2,10 +2,10 @@
 // CONFIG — settings and business rules you may want to change
 // =========================================================
 
-// Pre-fills the "Inspector" field on the Safety Inspection page.
-// When you add a login system, put the logged-in user's name here.
+// The authenticated employee inspects tools and is stored with each inspection.
 export const currentUser = {
-  name: "",
+  id: sessionStorage.getItem("employee_id") || "",
+  name: sessionStorage.getItem("employee_name") || "",
 };
 
 // When a tool is returned, its CONDITION decides its new STATUS.

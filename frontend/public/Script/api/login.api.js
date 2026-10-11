@@ -10,6 +10,8 @@ async function login(username, password) {
 
     if (response.ok) {
       sessionStorage.setItem("user_id", data.user_id);
+      sessionStorage.setItem("employee_id", data.employee_id);
+      sessionStorage.setItem("employee_name", data.employee_name);
       window.location.href = "index.html";
     } else {
       alert(data.message);

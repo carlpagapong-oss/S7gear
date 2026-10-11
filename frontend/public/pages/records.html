@@ -66,6 +66,11 @@
           <datalist id="toolTypeList"></datalist>
         </div>
 
+        <div class="field">
+          <label>TOOL CATEGORY *</label>
+          <input name="category" id="toolCategory" required>
+        </div>
+
         <div class="fgrid">
           <div class="field">
             <label>POWER TYPE</label>
@@ -87,6 +92,11 @@
         </div>
 
         <div class="field">
+          <label>IMAGE PATH</label>
+          <input name="imagePath" id="toolImagePath" placeholder="Optional image path">
+        </div>
+
+        <div class="field">
           <label>STATUS</label>
           <select name="status" id="toolStatus">
             <option>Available</option>
@@ -96,11 +106,6 @@
             <!-- Only shown when editing a tool that is already borrowed (status is then locked) -->
             <option hidden>Borrowed</option>
           </select>
-        </div>
-
-        <div class="field">
-          <label>LAST INSPECTION</label>
-          <input type="date" name="lastInspection" id="toolLastInspection">
         </div>
 
         <div class="row end">
@@ -117,6 +122,7 @@
       <h3 id="detailsTitle"></h3>
 
       <div class="kv"><span class="kv-label">Power</span><div id="detailsPower"></div></div>
+      <div class="kv"><span class="kv-label">Category</span><div id="detailsCategory"></div></div>
       <div class="kv"><span class="kv-label">Condition</span><div id="detailsCondition"></div></div>
       <div class="kv"><span class="kv-label">Status</span><div id="detailsStatus"></div></div>
       <div class="kv"><span class="kv-label">Current Borrower</span><div id="detailsBorrower"></div></div>

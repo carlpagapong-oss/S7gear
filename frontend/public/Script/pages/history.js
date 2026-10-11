@@ -146,7 +146,6 @@ function maintenanceRowHtml(record) {
       <td>${escapeHtml(record.issue)}</td>
       <td>${escapeHtml(record.action)}</td>
       <td>${statusBadge(record.status)}</td>
-      <td>${record.next || "—"}</td>
       <td>${completeButton}</td>
     </tr>`;
 }

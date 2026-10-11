@@ -4,6 +4,7 @@
 // =========================================================
 
 import { borrowTool, getActiveBorrows, getTools, returnTool } from "../database.js";
+import { getEmployees } from "../api/employees.api.js";
 import { $, escapeHtml, findActiveBorrow, findById, nowTime, today } from "../helpers.js";
 import { conditionBadge, statusBadge } from "../ui/badges.js";
 import { toast } from "../ui/toast.js";
@@ -13,14 +14,19 @@ initLayout();
 
 let tools = [];
 let activeBorrows = [];
+let employees = [];
 let selectedToolId = null;     // tool chosen on the Borrow tab
 let selectedBorrowId = null;   // borrowing chosen on the Return tab
 
 // ---------- Load data and show everything ----------
 async function refreshPage() {
-  tools = await getTools();
-  activeBorrows = await getActiveBorrows();
+  [tools, activeBorrows, employees] = await Promise.all([
+    getTools(),
+    getActiveBorrows(),
+    getEmployees(),
+  ]);
 
+  showEmployeeOptions();
   $("#subtitle").textContent = `${activeBorrows.length} active borrowings`;
   showBorrowTab();
   showReturnTab();
@@ -46,7 +52,9 @@ document.querySelectorAll(".tab").forEach((button) => {
 
 function showBorrowTab() {
   const tool = findById(tools, selectedToolId);
-  const canBorrow = Boolean(tool) && tool.status === "Available";
+  const canBorrow = Boolean(tool)
+    && tool.status === "Available"
+    && employees.length > 0;
 
   $("#borrowToolId").value = tool ? tool.id : "";
   $("#borrowToolInfo").innerHTML = tool ? toolSummaryHtml(tool) : availableToolLinksHtml();
@@ -56,9 +64,23 @@ function showBorrowTab() {
   let hint = "";
   if (!tool) hint = "Search for an available tool first.";
   else if (!canBorrow) hint = `This tool is ${tool.status.toLowerCase()} and cannot be borrowed.`;
+  if (tool?.status === "Available" && employees.length === 0) {
+    hint = "Add an employee before creating a borrowing.";
+  }
 
   $("#borrowHint").textContent = hint;
   $("#borrowHint").classList.toggle("hint-error", Boolean(tool) && !canBorrow);
+}
+
+function showEmployeeOptions() {
+  const select = $("#borrowEmployee");
+  const currentValue = select.value;
+  select.innerHTML = `<option value="">Select an employee</option>` + employees
+    .map((employee) => `<option value="${employee.id}">${escapeHtml(employee.name)}</option>`)
+    .join("");
+  if (employees.some((employee) => String(employee.id) === currentValue)) {
+    select.value = currentValue;
+  }
 }
 
 function toolSummaryHtml(tool) {
@@ -117,11 +139,13 @@ $("#borrowForm").addEventListener("submit", async (event) => {
   event.preventDefault();
   const form = event.target;
   const data = Object.fromEntries(new FormData(form));
+  const employee = employees.find((item) => String(item.id) === data.employeeId);
+  if (!employee) return toast("Select an employee.");
 
   try {
     const tool = await borrowTool(selectedToolId, data);
 
-    toast(`${tool.id} borrowed by ${data.borrower}.`);
+    toast(`${tool.id} borrowed by ${employee.name}.`);
     selectedToolId = null;
     form.reset();
     setBorrowFormDefaults();
