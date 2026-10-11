@@ -45,6 +45,8 @@ The frontend API base URL is `http://127.0.0.1:5000/api`.
 | POST | `/login` | Sign in with an existing user account |
 | GET | `/api/employees` | List active users for borrower/inspector selection |
 | GET, POST | `/api/tools` | List or add tools |
+| POST | `/api/tools/images` | Upload a PNG, JPEG, GIF, or WebP tool picture (5 MB max) |
+| GET | `/api/tools/images/<filename>` | Read an uploaded tool picture |
 | PUT, DELETE | `/api/tools/<tool_code>` | Update or delete a tool |
 | GET | `/api/tools/<tool_code>/history` | Read a tool's history |
 | GET, POST | `/api/borrows` | List or borrow tools; `?status=Active` filters active items |
@@ -56,3 +58,6 @@ The frontend API base URL is `http://127.0.0.1:5000/api`.
 The existing maintenance table has no next-service date field, so the frontend
 does not collect one. Inspection records continue to use their existing
 `next_inspection_date` column if maintained through the database.
+
+Uploaded tool pictures are stored in `backend/uploads/tool-images` and are
+excluded from source control.

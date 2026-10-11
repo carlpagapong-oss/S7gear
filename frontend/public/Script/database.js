@@ -1,5 +1,12 @@
 // Compatibility exports for page modules. Keep API details in the resource files.
-export { addTool, deleteTool, getTools, updateTool } from "./api/tools.api.js";
+export {
+  addTool,
+  deleteTool,
+  getToolCategories,
+  getTools,
+  updateTool,
+  uploadToolImage,
+} from "./api/tools.api.js";
 export {
   borrowTool,
   getActiveBorrows,

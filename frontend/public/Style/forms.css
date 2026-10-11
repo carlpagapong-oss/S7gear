@@ -41,6 +41,23 @@ textarea:focus {
   gap: 0 12px;
 }
 
+.tool-image-preview,
+.tool-details-image {
+  max-width: 100%;
+  object-fit: contain;
+}
+.tool-image-preview {
+  max-height: 180px;
+  margin-top: 8px;
+}
+.tool-details-image {
+  display: block;
+  max-height: 260px;
+  margin: 0 auto 16px;
+}
+.tool-image-preview[hidden],
+.tool-details-image[hidden] { display: none; }
+
 /* Small search form: [ input ][ button ] */
 .find-form input { flex: 1; }
 

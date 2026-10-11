@@ -1,7 +1,9 @@
 import re
+import uuid
 from datetime import date
+from pathlib import Path
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, send_from_directory, url_for
 
 from routes.api_helpers import (
     borrow_json,
@@ -13,9 +15,13 @@ from routes.api_helpers import (
 )
 
 tools_bp = Blueprint("tools", __name__, url_prefix="/api/tools")
+UPLOAD_DIRECTORY = Path(__file__).resolve().parents[2] / "uploads" / "tool-images"
+MAX_IMAGE_SIZE = 5 * 1024 * 1024
 TOOL_ID_PATTERN = re.compile(r"^PT-\d{3,}$")
 TOOL_FIELDS = {
     "type": "tool_type",
+    "brand": "brand",
+    "model": "model",
     "power": "power_type",
     "imagePath": "image_path",
     "condition": "current_condition",
@@ -30,8 +36,22 @@ TOOL_STATUSES = {
 }
 TOOL_CONDITIONS = {"New", "Good", "Fair", "Damaged", "Unsafe"}
 
+
+def image_extension(image_data):
+    if image_data.startswith(b"\x89PNG\r\n\x1a\n"):
+        return ".png"
+    if image_data.startswith(b"\xff\xd8\xff"):
+        return ".jpg"
+    if image_data.startswith((b"GIF87a", b"GIF89a")):
+        return ".gif"
+    if image_data.startswith(b"RIFF") and image_data[8:12] == b"WEBP":
+        return ".webp"
+    return None
+
+
 TOOL_SELECT = """
     SELECT t.tool_id AS id, t.tool_code, t.tool_type AS type,
+           t.brand, t.model,
            c.category_name AS category, t.power_type AS power,
            t.image_path, t.current_condition AS `condition`,
            t.current_status AS status,
@@ -48,6 +68,12 @@ TOOL_SELECT = """
 def validate_tool_values(changes):
     if "type" in changes and not isinstance(changes["type"], str):
         return "Tool type must be text."
+    if "brand" in changes and not isinstance(changes["brand"], str):
+        return "Tool brand must be text."
+    if "model" in changes and not isinstance(changes["model"], str):
+        return "Tool model must be text."
+    if any(len(changes[field]) > 100 for field in ("brand", "model") if field in changes):
+        return "Brand and model must be 100 characters or fewer."
     if "category" in changes and not isinstance(changes["category"], str):
         return "Tool category must be text."
     if "imagePath" in changes and not isinstance(changes["imagePath"], str):
@@ -77,6 +103,54 @@ def get_tools():
         if "cursor" in locals():
             cursor.close()
         connection.close()
+
+
+@tools_bp.route("/categories", methods=["GET"])
+@database_errors
+def get_tool_categories():
+    connection, error = open_connection()
+    if error:
+        return error
+    try:
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute(
+            "SELECT category_id AS id, category_name AS name "
+            "FROM tool_categories ORDER BY category_name"
+        )
+        return jsonify(cursor.fetchall())
+    finally:
+        if "cursor" in locals():
+            cursor.close()
+        connection.close()
+
+
+@tools_bp.route("/images", methods=["POST"])
+def upload_tool_image():
+    image = request.files.get("image")
+    if image is None or not image.filename:
+        return jsonify({"message": "Choose an image to upload."}), 400
+    if request.content_length and request.content_length > MAX_IMAGE_SIZE + 128 * 1024:
+        return jsonify({"message": "Image must be 5 MB or smaller."}), 413
+
+    image_data = image.stream.read(MAX_IMAGE_SIZE + 1)
+    if len(image_data) > MAX_IMAGE_SIZE:
+        return jsonify({"message": "Image must be 5 MB or smaller."}), 413
+
+    extension = image_extension(image_data)
+    if extension is None:
+        return jsonify({"message": "Choose a PNG, JPEG, GIF, or WebP image."}), 400
+
+    filename = f"{uuid.uuid4().hex}{extension}"
+    UPLOAD_DIRECTORY.mkdir(parents=True, exist_ok=True)
+    (UPLOAD_DIRECTORY / filename).write_bytes(image_data)
+    return jsonify({
+        "imagePath": url_for("tools.get_tool_image", filename=filename, _external=True),
+    }), 201
+
+
+@tools_bp.route("/images/<filename>", methods=["GET"])
+def get_tool_image(filename):
+    return send_from_directory(UPLOAD_DIRECTORY, filename)
 
 
 @tools_bp.route("", methods=["POST"])
@@ -110,14 +184,16 @@ def add_tool():
         cursor.execute(
             """
             INSERT INTO tools
-              (tool_code, category_id, tool_type, power_type, image_path,
-               current_status, current_condition)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
+              (tool_code, category_id, tool_type, brand, model, power_type,
+               image_path, current_status, current_condition)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
             (
                 data["id"].upper(),
                 category["category_id"],
                 data["type"].strip(),
+                data.get("brand", "").strip() or None,
+                data.get("model", "").strip() or None,
                 data["power"],
                 data.get("imagePath") or None,
                 data.get("status", "Available"),
@@ -189,7 +265,12 @@ def update_tool(tool_code):
                 return jsonify({"message": "Inspection dates are set by saving an inspection."}), 400
             else:
                 assignments.append(f"{TOOL_FIELDS[key]} = %s")
-                values.append(value or None if key == "imagePath" else value)
+                if key in ("brand", "model"):
+                    values.append(value.strip() or None)
+                elif key == "imagePath":
+                    values.append(value or None)
+                else:
+                    values.append(value)
 
         cursor.execute(
             f"UPDATE tools SET {', '.join(assignments)} WHERE tool_id = %s",

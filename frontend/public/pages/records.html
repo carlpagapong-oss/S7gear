@@ -61,14 +61,27 @@
         </div>
 
         <div class="field">
+          <label>TOOL CATEGORY *</label>
+          <select name="category" id="toolCategory" required>
+            <option value="">Select a category</option>
+          </select>
+        </div>
+
+        <div class="field">
           <label>TOOL TYPE *</label>
           <input name="type" id="toolType" list="toolTypeList" required>
           <datalist id="toolTypeList"></datalist>
         </div>
 
-        <div class="field">
-          <label>TOOL CATEGORY *</label>
-          <input name="category" id="toolCategory" required>
+        <div class="fgrid">
+          <div class="field">
+            <label>BRAND</label>
+            <input name="brand" id="toolBrand" maxlength="100" placeholder="Optional brand">
+          </div>
+          <div class="field">
+            <label>MODEL</label>
+            <input name="model" id="toolModel" maxlength="100" placeholder="Optional model">
+          </div>
         </div>
 
         <div class="fgrid">
@@ -92,8 +105,9 @@
         </div>
 
         <div class="field">
-          <label>IMAGE PATH</label>
-          <input name="imagePath" id="toolImagePath" placeholder="Optional image path">
+          <label>TOOL PICTURE</label>
+          <input name="image" id="toolImage" type="file" accept="image/png,image/jpeg,image/gif,image/webp">
+          <img id="toolImagePreview" class="tool-image-preview" alt="Selected tool picture" hidden>
         </div>
 
         <div class="field">
@@ -121,6 +135,9 @@
     <div class="modal-card">
       <h3 id="detailsTitle"></h3>
 
+      <img id="detailsImage" class="tool-details-image" alt="Tool picture" hidden>
+      <div class="kv"><span class="kv-label">Brand</span><div id="detailsBrand"></div></div>
+      <div class="kv"><span class="kv-label">Model</span><div id="detailsModel"></div></div>
       <div class="kv"><span class="kv-label">Power</span><div id="detailsPower"></div></div>
       <div class="kv"><span class="kv-label">Category</span><div id="detailsCategory"></div></div>
       <div class="kv"><span class="kv-label">Condition</span><div id="detailsCondition"></div></div>

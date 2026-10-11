@@ -65,6 +65,8 @@ def tool_json(row):
     return {
         "id": row["tool_code"],
         "type": row["type"],
+        "brand": row.get("brand") or "",
+        "model": row.get("model") or "",
         "category": row["category"],
         "power": row["power"],
         "imagePath": row["image_path"] or "",
