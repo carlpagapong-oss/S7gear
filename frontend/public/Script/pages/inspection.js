@@ -3,7 +3,13 @@
 // =========================================================
 
 import { STATUS_AFTER_INSPECTION, currentUser } from "../config.js";
-import { getInspections, getTools, saveInspection } from "../database.js";
+import {
+  getInspectionSchedule,
+  getInspections,
+  getTools,
+  saveInspection,
+  saveInspectionSchedule,
+} from "../database.js";
 import { getEmployees } from "../api/employees.api.js";
 import { $, escapeHtml, findById, today } from "../helpers.js";
 import { conditionBadge, statusBadge } from "../ui/badges.js";
@@ -36,30 +42,35 @@ const CHECK_CHOICES = [
 const RESULT_COLORS = {
   "Passed":            "on-green",
   "Needs Maintenance": "on-orange",
-  "Failed / Unsafe":   "on-red",
 };
 
 let tools = [];
+let schedule = { current: null, upcoming: null, inspections: [] };
 let selectedToolId = null;
+let inspectionFilter = "all";
 let checklist = {};          // { itemNumber: "Pass" | "Fail" | "N/A" }
-let selectedResult = "";     // "Passed" | "Needs Maintenance" | "Failed / Unsafe"
+let selectedResult = "";     // "Passed" | "Needs Maintenance"
+let statusRefreshInProgress = false;
 
 // ---------- Load data and show everything ----------
 async function refreshPage() {
   const isSafetyOfficer = currentUser.role.trim().toLowerCase() === "safety officer";
-  const [loadedTools, inspections, employees] = await Promise.all([
+  const [loadedTools, inspections, inspectionSchedule, employees] = await Promise.all([
     getTools(),
     getInspections(),
+    getInspectionSchedule(),
     isSafetyOfficer ? Promise.resolve([]) : getEmployees(),
   ]);
   tools = loadedTools;
+  schedule = inspectionSchedule;
   showInspectorOptions(employees);
 
+  showInspectionSchedule();
   showToolList();
   showSelectedTool();
   showChecklist();
   showResultButtons();
-  showRecentInspections(inspections.slice(0, 5));   // newest 5
+  showRecentInspections(inspections);
 }
 
 function resetInspection() {
@@ -90,11 +101,24 @@ function showInspectorOptions(employees) {
 
 function showToolList() {
   const query = $("#findToolId").value.trim().toLowerCase();
-  const matches = tools.filter((tool) =>
-    `${tool.id} ${tool.type} ${tool.category}`.toLowerCase().includes(query),
-  );
+  const inspected = new Map(schedule.inspections.map((item) => [item.toolId, item]));
+  const matches = tools.filter((tool) => {
+    const inspection = inspected.get(tool.id);
+    const matchesQuery = `${tool.id} ${tool.type} ${tool.category}`.toLowerCase().includes(query);
+    const matchesFilter = inspectionFilter === "all"
+      || (inspectionFilter === "inspected" && Boolean(inspection))
+      || (inspectionFilter === "pending" && !inspection);
+    return matchesQuery && matchesFilter;
+  });
   if (matches.length === 0) {
-    $("#inspectionToolList").innerHTML = `<div class="empty">${query ? "No tools match your search." : "No tools registered."}</div>`;
+    const message = query
+      ? "No tools match your search."
+      : inspectionFilter === "inspected"
+        ? "No tools have been inspected for the current inspection."
+        : inspectionFilter === "pending"
+          ? "All tools have been inspected for the current inspection."
+          : "No tools registered.";
+    $("#inspectionToolList").innerHTML = `<div class="empty">${message}</div>`;
     return;
   }
 
@@ -102,27 +126,61 @@ function showToolList() {
     <tr class="${tool.id === selectedToolId ? "selected" : ""}">
       <td class="mono">${escapeHtml(tool.id)}</td>
       <td>${escapeHtml(tool.type)}</td>
-      <td>${conditionBadge(tool.condition)}</td>
-      <td>${statusBadge(tool.status)}</td>
+      <td>${statusBadge(inspected.get(tool.id) ? "Inspected" : "Not Inspected")}</td>
+      <td>${escapeHtml(inspected.get(tool.id)?.date || "—")}</td>
+      <td>${statusBadge(tool.unrepairable ? "Unrepairable" : tool.status)}</td>
       <td>
         <button
           type="button"
           class="btn sm ${tool.id === selectedToolId ? "primary" : ""}"
           data-inspect-tool="${escapeHtml(tool.id)}"
-          ${tool.status === "Borrowed" ? "disabled" : ""}
-        >${tool.status === "Borrowed" ? "Borrowed" : tool.id === selectedToolId ? "Selected" : "Inspect"}</button>
+          ${(tool.status === "Borrowed" || tool.unrepairable || inspected.has(tool.id) || !schedule.current) ? "disabled" : ""}
+        >${tool.status === "Borrowed" ? "Borrowed" : tool.unrepairable ? "Unrepairable" : inspected.has(tool.id) ? "Inspected" : tool.id === selectedToolId ? "Selected" : "Inspect"}</button>
       </td>
     </tr>`).join("");
   $("#inspectionToolList").innerHTML = `
     <div class="table-wrap">
       <table>
-        <thead><tr><th>TOOL ID</th><th>TOOL</th><th>CONDITION</th><th>STATUS</th><th>ACTION</th></tr></thead>
+        <thead><tr><th>TOOL ID</th><th>TOOL</th><th>INSPECTION STATUS</th><th>INSPECTED ON</th><th>TOOL STATUS</th><th>ACTION</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
     </div>`;
 }
 
 $("#findToolId").addEventListener("input", showToolList);
+$("#inspectionStatusFilter").addEventListener("change", (event) => {
+  inspectionFilter = event.target.value;
+  showToolList();
+});
+
+function showInspectionSchedule() {
+  const current = schedule.current
+    ? `Current inspection: <b>${escapeHtml(schedule.current.date)}</b>.`
+    : "No current inspection is scheduled yet.";
+  const upcoming = schedule.upcoming
+    ? ` Next inspection date: <b>${escapeHtml(schedule.upcoming.date)}</b>.`
+    : "";
+  $("#inspectionScheduleStatus").innerHTML = `${current}${upcoming}`;
+
+  const dateInput = $("#scheduleDate");
+  dateInput.min = today();
+  if (!dateInput.value) dateInput.value = schedule.upcoming?.date || today();
+  $("#scheduleSubmit").textContent = schedule.upcoming ? "Update Scheduled Date" : "Schedule Inspection";
+}
+
+$("#scheduleInspectionForm").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const scheduledDate = $("#scheduleDate").value;
+  if (!scheduledDate) return toast("Choose an inspection date.");
+  try {
+    schedule = await saveInspectionSchedule(scheduledDate);
+    toast(schedule.upcoming ? `Inspection rescheduled for ${schedule.upcoming.date}.` : `Inspection scheduled for ${scheduledDate}.`);
+    await refreshPage();
+  } catch (error) {
+    toast(error.message);
+  }
+});
+
 $("#inspectionToolList").addEventListener("click", (event) => {
   const button = event.target.closest("button[data-inspect-tool]");
   if (!button) return;
@@ -150,9 +208,9 @@ function showSelectedTool() {
     <div class="tool-box">
       <small class="t-muted">SELECTED TOOL</small>
       <h3>${escapeHtml(tool.type)}</h3>
-      <span class="mono t-muted">${tool.id}</span>
+      <span class="mono t-muted">${escapeHtml(tool.id)}</span>
       <div class="mt-sm">
-        <div class="kv"><span class="kv-label">Status</span><div>${statusBadge(tool.status)}</div></div>
+        <div class="kv"><span class="kv-label">Status</span><div>${statusBadge(tool.unrepairable ? "Unrepairable" : tool.status)}</div></div>
         <div class="kv"><span class="kv-label">Condition</span><div>${conditionBadge(tool.condition)}</div></div>
         <div class="kv"><span class="kv-label">Power</span><div><b>${tool.power}</b></div></div>
         <div class="kv"><span class="kv-label">Last Inspection</span><div>${tool.lastInspection || "—"}</div></div>
@@ -161,16 +219,24 @@ function showSelectedTool() {
 }
 
 function showRecentInspections(inspections) {
-  const items = inspections.map((inspection) => `
-    <div class="list-item">
-      <div>
-        <b class="mono">${inspection.toolId}</b><br>
-        <small>${inspection.date} · ${escapeHtml(inspection.inspector)}</small>
-      </div>
-      ${statusBadge(inspection.result)}
-    </div>`);
-
-  $("#recentList").innerHTML = items.join("") || `<div class="empty">No inspections yet</div>`;
+  if (inspections.length === 0) {
+    $("#recentList").innerHTML = `<div class="empty">No inspections yet</div>`;
+    return;
+  }
+  const rows = inspections.map((inspection) => `
+    <tr>
+      <td class="mono">${escapeHtml(inspection.toolId)}</td>
+      <td>${escapeHtml(inspection.date)}</td>
+      <td>${escapeHtml(inspection.inspector)}</td>
+      <td>${statusBadge(inspection.result)}</td>
+    </tr>`).join("");
+  $("#recentList").innerHTML = `
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>TOOL ID</th><th>INSPECTION DATE</th><th>INSPECTOR</th><th>RESULT</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
 }
 
 // ---------- Checklist ----------
@@ -237,7 +303,9 @@ $("#inspectionForm").addEventListener("submit", async (event) => {
   try {
     const tool = await saveInspection(selectedToolId, { ...data, result: selectedResult });
 
-    toast(`Inspection saved — ${tool.id} is now ${tool.status}.`);
+    toast(selectedResult === "Needs Maintenance"
+      ? `Inspection saved — ${tool.id} added to the maintenance queue.`
+      : `Inspection saved — ${tool.id} is now ${tool.status}.`);
     resetInspection();
     form.reset();
     setFormDefaults();
@@ -252,3 +320,24 @@ $("#inspectionForm").addEventListener("submit", async (event) => {
 $("#todayText").textContent = today();
 setFormDefaults();
 refreshPage();
+async function refreshToolStatuses() {
+  if (statusRefreshInProgress) return;
+  statusRefreshInProgress = true;
+  try {
+    tools = await getTools();
+    showToolList();
+    showSelectedTool();
+  } catch (error) {
+    toast(`Could not refresh tool statuses: ${error.message}`);
+  } finally {
+    statusRefreshInProgress = false;
+  }
+}
+
+window.setInterval(() => {
+  if (document.visibilityState === "visible") refreshToolStatuses();
+}, 10000);
+window.addEventListener("focus", refreshToolStatuses);
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") refreshToolStatuses();
+});

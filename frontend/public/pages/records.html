@@ -26,24 +26,35 @@
         </div>
 
         <!-- Tool table. Rows are filled in by script/pages/records.js -->
-        <div class="card table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>TOOL ID</th>
-                <th>TOOL TYPE</th>
-                <th>POWER</th>
-                <th>CONDITION</th>
-                <th>STATUS</th>
-                <th>CURRENT BORROWER</th>
-                <th>EXPECTED RETURN</th>
-                <th>LAST INSPECTION</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody id="toolsBody"></tbody>
-          </table>
-          <div class="foot" id="toolsFoot"></div>
+        <div class="card">
+          <div class="toolbar">
+            <input id="recordSearch" placeholder="Search by ID, type, brand, model, or category...">
+            <select id="statusFilter"><option value="">All Statuses</option></select>
+            <select id="typeFilter"><option value="">All Types</option></select>
+            <label id="unrepairableFilterLabel" class="check-inline" hidden>
+              <input type="checkbox" id="includeUnrepairable">
+              Include unrepairable tools
+            </label>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>TOOL ID</th>
+                  <th>TOOL TYPE</th>
+                  <th>POWER</th>
+                  <th>CONDITION</th>
+                  <th>STATUS</th>
+                  <th>CURRENT BORROWER</th>
+                  <th>EXPECTED RETURN</th>
+                  <th>LAST INSPECTION</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="toolsBody"></tbody>
+            </table>
+            <div class="foot" id="toolsFoot"></div>
+          </div>
         </div>
       </div>
     </main>

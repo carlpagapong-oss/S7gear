@@ -36,6 +36,30 @@
         </div>
 
         <div class="card">
+          <div class="card-h">Tool Status</div>
+          <div class="toolbar">
+            <input id="safetyToolSearch" type="search" placeholder="Search by tool ID, type, or category" aria-label="Search tools">
+            <select id="safetyToolStatus" aria-label="Filter tool status">
+              <option value="">All statuses</option>
+              <option>Available</option>
+              <option>Borrowed</option>
+              <option>Under Inspection</option>
+              <option>Under Maintenance</option>
+              <option>Unsafe</option>
+            </select>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>TOOL ID</th><th>TOOL TYPE</th><th>CATEGORY</th><th>CONDITION</th><th>STATUS</th></tr>
+              </thead>
+              <tbody id="safetyToolsBody"></tbody>
+            </table>
+            <div class="foot" id="safetyToolsFoot"></div>
+          </div>
+        </div>
+
+        <div class="card">
           <div class="card-h">Safety Actions</div>
           <div class="card-b row">
             <a class="btn primary" href="inspection.html">Start Safety Inspection</a>

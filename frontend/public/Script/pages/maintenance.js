@@ -1,74 +1,93 @@
-import { addMaintenanceRecord, completeMaintenance, getMaintenanceRecords, getTools } from "../database.js";
-import { $, escapeHtml, today } from "../helpers.js";
-import { statusBadge } from "../ui/badges.js";
+import { completeMaintenance, getMaintenanceRecords, markMaintenanceUnrepairable } from "../database.js";
+import { $, escapeHtml } from "../helpers.js";
+import { conditionBadge, statusBadge } from "../ui/badges.js";
 import { toast } from "../ui/toast.js";
 import { initLayout } from "../ui/layout.js";
+import { openModal } from "../ui/modal.js";
 
 initLayout();
-
-let tools = [];
+let maintenanceRecords = [];
 
 async function refreshPage() {
-  const [loadedTools, maintenance] = await Promise.all([
-    getTools(),
-    getMaintenanceRecords(),
-  ]);
-  tools = loadedTools;
-  showToolOptions();
-  showMaintenanceRecords(maintenance);
-}
-
-function showToolOptions() {
-  const select = $("#maintenanceTool");
-  const selected = select.value;
-  select.innerHTML = tools.map((tool) =>
-    `<option value="${escapeHtml(tool.id)}">${escapeHtml(tool.id)} — ${escapeHtml(tool.type)} (${escapeHtml(tool.status)})</option>`,
-  ).join("");
-  if (tools.some((tool) => tool.id === selected)) select.value = selected;
+  maintenanceRecords = await getMaintenanceRecords();
+  showMaintenanceRecords(maintenanceRecords);
 }
 
 function showMaintenanceRecords(records) {
-  $("#maintenanceBody").innerHTML = records.map((record) => `
+  const activeRecords = records.filter((record) => record.status === "In Progress");
+  const completedRecords = records.filter((record) => record.status !== "In Progress");
+
+  const rowsHtml = (items) => items.map((record) => `
     <tr>
-      <td class="mono">${escapeHtml(record.id)}</td>
       <td class="mono">${escapeHtml(record.toolId)}</td>
+      <td>${escapeHtml(record.toolType)}</td>
+      <td>${escapeHtml(record.category)}</td>
+      <td>${escapeHtml(record.toolCondition)}</td>
       <td>${escapeHtml(record.date)}</td>
       <td>${escapeHtml(record.type)}</td>
       <td>${escapeHtml(record.issue)}</td>
       <td>${escapeHtml(record.action)}</td>
       <td>${statusBadge(record.status)}</td>
-      <td>${record.status === "In Progress"
-        ? `<button type="button" class="btn sm" data-complete="${escapeHtml(record.id)}">Complete</button>`
-        : "—"}</td>
-    </tr>`).join("") || `<tr><td colspan="8" class="empty">No maintenance records</td></tr>`;
+      <td><div class="row nowrap">
+        <button type="button" class="btn sm" data-view="${escapeHtml(record.id)}">View</button>
+        ${record.status === "In Progress"
+          ? `<button type="button" class="btn sm" data-complete="${escapeHtml(record.id)}">Complete</button>`
+          : ""}
+        ${record.status === "In Progress"
+          ? `<button type="button" class="btn sm" data-unrepairable="${escapeHtml(record.id)}">Unrepairable</button>`
+          : ""}
+      </div></td>
+    </tr>`).join("");
+
+  $("#activeMaintenanceBody").innerHTML = rowsHtml(activeRecords)
+    || `<tr><td colspan="10" class="empty">No active maintenance records</td></tr>`;
+  $("#completedMaintenanceBody").innerHTML = rowsHtml(completedRecords)
+    || `<tr><td colspan="10" class="empty">No completed or unrepairable maintenance records</td></tr>`;
 }
 
-$("#maintenanceDate").value = today();
-
-$("#maintenanceForm").addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const data = Object.fromEntries(new FormData(event.target));
-  try {
-    await addMaintenanceRecord({ ...data, status: "In Progress" });
-    toast("Maintenance record saved.");
-    event.target.reset();
-    $("#maintenanceDate").value = today();
-    await refreshPage();
-  } catch (error) {
-    toast(error.message);
+$(".content").addEventListener("click", async (event) => {
+  const viewButton = event.target.closest("button[data-view]");
+  if (viewButton) {
+    showMaintenanceDetails(maintenanceRecords.find((record) => record.id === viewButton.dataset.view));
+    return;
   }
-});
-
-$("#maintenanceBody").addEventListener("click", async (event) => {
-  const button = event.target.closest("button[data-complete]");
+  const button = event.target.closest("button[data-complete], button[data-unrepairable]");
   if (!button) return;
   try {
-    await completeMaintenance(button.dataset.complete);
-    toast("Maintenance marked as complete.");
+    if (button.dataset.complete) {
+      await completeMaintenance(button.dataset.complete);
+      toast("Maintenance completed. The tool is now available.");
+    } else {
+      if (!window.confirm("Mark this tool as unrepairable and remove it from service?")) return;
+      const record = await markMaintenanceUnrepairable(button.dataset.unrepairable);
+      toast(`${record.toolId} marked unsafe because it cannot be repaired.`);
+    }
     await refreshPage();
   } catch (error) {
     toast(error.message);
   }
 });
+
+function showMaintenanceDetails(record) {
+  if (!record) return;
+
+  $("#maintenanceDetailsTitle").textContent = `${record.toolId} — ${record.toolType}`;
+  const image = $("#maintenanceDetailsImage");
+  image.hidden = !record.imagePath;
+  if (record.imagePath) image.src = record.imagePath;
+  else image.removeAttribute("src");
+
+  $("#maintenanceDetailsToolId").textContent = record.toolId || "—";
+  $("#maintenanceDetailsCategory").textContent = record.category || "—";
+  $("#maintenanceDetailsBrand").textContent = record.brand || "—";
+  $("#maintenanceDetailsModel").textContent = record.model || "—";
+  $("#maintenanceDetailsPower").textContent = record.power || "—";
+  $("#maintenanceDetailsCondition").innerHTML = conditionBadge(record.toolCondition || "Unknown");
+  $("#maintenanceDetailsToolStatus").innerHTML = statusBadge(record.toolStatus || "Unknown");
+  $("#maintenanceDetailsRecord").textContent = `${record.type} · ${record.date} · ${record.status}`;
+  $("#maintenanceDetailsIssue").textContent = record.issue || "No issue details provided.";
+  $("#maintenanceDetailsAction").textContent = record.action || "No action details provided.";
+  openModal("maintenanceDetailsModal");
+}
 
 refreshPage();

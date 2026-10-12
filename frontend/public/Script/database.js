@@ -14,12 +14,18 @@ export {
   returnTool,
 } from "./api/borrows.api.js";
 
-export { getInspections, saveInspection } from "./api/inspections.api.js";
+export {
+  getInspectionSchedule,
+  getInspections,
+  saveInspection,
+  saveInspectionSchedule,
+} from "./api/inspections.api.js";
 
 export {
   addMaintenanceRecord,
   completeMaintenance,
   getMaintenanceRecords,
+  markMaintenanceUnrepairable,
 } from "./api/maintenance.api.js";
 
 export { getToolHistory } from "./api/history.api.js";

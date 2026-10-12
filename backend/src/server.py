@@ -22,13 +22,13 @@ TOOL_MANAGER_ROLE = "tool manager"
 def safety_officer_can_access(path, method):
     if path == "/api/tools" and method == "GET":
         return True
-    if path == "/api/inspections" and method in ("GET", "POST"):
+    if path in ("/api/inspections", "/api/inspections/schedule") and method in ("GET", "POST"):
         return True
     if path == "/api/maintenance" and method in ("GET", "POST"):
         return True
     return (
         method == "POST"
-        and re.fullmatch(r"/api/maintenance/MNT-\d+/complete", path) is not None
+        and re.fullmatch(r"/api/maintenance/MNT-\d+/(complete|unrepairable)", path) is not None
     )
 
 
@@ -50,7 +50,9 @@ def authorize_api_request():
     if (
         session["role"].strip().lower() == TOOL_MANAGER_ROLE
     ):
-        if request.path == "/api/inspections":
+        if request.method == "GET" and request.path in ("/api/inspections", "/api/maintenance"):
+            return None
+        if request.path == "/api/inspections" or request.path.startswith("/api/inspections/"):
             return jsonify({"message": "Tool Managers are not allowed to access safety inspections."}), 403
         if request.path == "/api/maintenance" or request.path.startswith("/api/maintenance/"):
             return jsonify({"message": "Tool Managers are not allowed to access maintenance."}), 403

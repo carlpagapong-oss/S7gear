@@ -13,6 +13,7 @@ import {
   updateTool,
   uploadToolImage,
 } from "../database.js";
+import { currentUser } from "../config.js";
 import { $, escapeHtml, findActiveBorrow, findById, nextId, optionsHtml, uniqueValues } from "../helpers.js";
 import { conditionBadge, statusBadge } from "../ui/badges.js";
 import { closeModal, openModal } from "../ui/modal.js";
@@ -25,22 +26,83 @@ initLayout();
 let tools = [];
 let toolCategories = [];
 let activeBorrows = [];
+let refreshInProgress = false;
 let editingToolId = null;   // null = we are adding a new tool
 let imagePreviewUrl = null;
+const isToolManager = currentUser.role.trim().toLowerCase() === "tool manager";
 
 // ---------- Show the table ----------
 async function showTools() {
-  [tools, activeBorrows, toolCategories] = await Promise.all([
-    getTools(),
-    getActiveBorrows(),
-    getToolCategories(),
-  ]);
+  if (refreshInProgress) return;
+  refreshInProgress = true;
+  try {
+    [tools, activeBorrows, toolCategories] = await Promise.all([
+      getTools(),
+      getActiveBorrows(),
+      getToolCategories(),
+    ]);
 
-  $("#toolCount").textContent = `${tools.length} total power tools registered`;
-  $("#toolsFoot").textContent = `${tools.length} tools`;
+    $("#toolCount").textContent = `${tools.length} total power tools registered`;
+    if (isToolManager) {
+      $("#unrepairableFilterLabel").hidden = false;
+    }
 
-  const rows = tools.map((tool) => toolRowHtml(tool, findActiveBorrow(activeBorrows, tool.id), true));
+    const selectedStatus = $("#statusFilter").value;
+    const selectedType = $("#typeFilter").value;
+    $("#typeFilter").innerHTML = `<option value="">All Types</option>` + optionsHtml(uniqueValues(tools.map((tool) => tool.type)));
+    $("#statusFilter").innerHTML = `<option value="">All Statuses</option>` + optionsHtml(uniqueValues(tools.map((tool) => tool.status)));
+    $("#typeFilter").value = selectedType;
+    $("#statusFilter").value = selectedStatus;
+    showFilteredTools();
+  } finally {
+    refreshInProgress = false;
+  }
+}
+
+function showFilteredTools() {
+  const search = $("#recordSearch").value.trim().toLowerCase();
+  const status = $("#statusFilter").value;
+  const type = $("#typeFilter").value;
+  const includeUnrepairable = !isToolManager || $("#includeUnrepairable").checked;
+  const visibleTools = tools.filter((tool) => {
+    const matchesSearch = !search || [
+      tool.id, tool.type, tool.brand, tool.model, tool.category,
+    ].join(" ").toLowerCase().includes(search);
+    const matchesStatus = !status || tool.status === status;
+    const matchesType = !type || tool.type === type;
+    const matchesUnrepairable = includeUnrepairable || !tool.unrepairable;
+    return matchesSearch && matchesStatus && matchesType && matchesUnrepairable;
+  }).sort((first, second) => {
+    const firstUnsafe = first.status === "Unsafe" || first.condition === "Unsafe";
+    const secondUnsafe = second.status === "Unsafe" || second.condition === "Unsafe";
+    return Number(firstUnsafe) - Number(secondUnsafe);
+  });
+  const rows = visibleTools.map((tool) => toolRowHtml(tool, findActiveBorrow(activeBorrows, tool.id), true));
   $("#toolsBody").innerHTML = rows.join("") || emptyRowHtml(9, "No tools found");
+  $("#toolsFoot").textContent = `${visibleTools.length} tools shown`;
+}
+
+$("#includeUnrepairable").addEventListener("change", showFilteredTools);
+$("#recordSearch").addEventListener("input", showFilteredTools);
+$("#statusFilter").addEventListener("change", showFilteredTools);
+$("#typeFilter").addEventListener("change", showFilteredTools);
+
+if (isToolManager) {
+  window.setInterval(() => {
+    if (document.visibilityState === "visible" && $("#toolModal").classList.contains("hidden")) {
+      showTools().catch((error) => toast(`Could not refresh tools: ${error.message}`));
+    }
+  }, 3000);
+  window.addEventListener("focus", () => {
+    if ($("#toolModal").classList.contains("hidden")) {
+      showTools().catch((error) => toast(`Could not refresh tools: ${error.message}`));
+    }
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && $("#toolModal").classList.contains("hidden")) {
+      showTools().catch((error) => toast(`Could not refresh tools: ${error.message}`));
+    }
+  });
 }
 
 // ---------- Buttons in the table (View / Edit / Delete) ----------
@@ -181,13 +243,16 @@ $("#toolForm").addEventListener("submit", async (event) => {
 async function confirmDeleteTool(id) {
   const tool = findById(tools, id);
 
-  if (tool.status === "Borrowed") return toast("Cannot delete a borrowed tool.");
-  if (!confirm(`Delete ${tool.id} — ${tool.type}?`)) return;
+  if (!tool) return toast("Tool not found.");
+  if (tool.status === "Borrowed" || findActiveBorrow(activeBorrows, id)) {
+    return toast("Return this tool before deleting it.");
+  }
+  if (!confirm(`Permanently delete ${tool.id} — ${tool.type} and all its history? This cannot be undone.`)) return;
 
   try {
     await deleteTool(id);
     await showTools();
-    toast("Tool deleted.");
+    toast("Tool and its history deleted.");
   } catch (error) {
     toast(error.message);
   }

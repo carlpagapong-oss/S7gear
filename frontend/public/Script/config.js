@@ -22,5 +22,4 @@ export const STATUS_AFTER_RETURN = {
 export const STATUS_AFTER_INSPECTION = {
   "Passed":            "Available",
   "Needs Maintenance": "Under Maintenance",
-  "Failed / Unsafe":   "Unsafe",
 };

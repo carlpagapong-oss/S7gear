@@ -14,53 +14,56 @@
     <main>
       <header class="topbar"><b>Maintenance</b></header>
       <div class="content">
-        <h2 class="title">Maintenance Management</h2>
-        <p class="subtitle">Record repairs and track tools under maintenance.</p>
+        <h2 class="title">Maintenance Records</h2>
+        <p class="subtitle">Review inspection follow-ups and track tools under maintenance.</p>
 
-        <div class="grid-side">
-          <div class="card">
-            <div class="card-h">Record Maintenance</div>
-            <div class="card-b">
-              <form id="maintenanceForm">
-                <div class="field">
-                  <label for="maintenanceTool">TOOL *</label>
-                  <select name="toolId" id="maintenanceTool" required></select>
-                </div>
-                <div class="field">
-                  <label for="maintenanceDate">DATE *</label>
-                  <input type="date" name="date" id="maintenanceDate" required>
-                </div>
-                <div class="field">
-                  <label for="maintenanceType">MAINTENANCE TYPE *</label>
-                  <input name="type" id="maintenanceType" required maxlength="100" placeholder="e.g. Repair">
-                </div>
-                <div class="field">
-                  <label for="maintenanceIssue">ISSUE *</label>
-                  <textarea name="issue" id="maintenanceIssue" required placeholder="Describe the fault or maintenance needed..."></textarea>
-                </div>
-                <div class="field">
-                  <label for="maintenanceAction">ACTION TAKEN / PLANNED *</label>
-                  <textarea name="action" id="maintenanceAction" required placeholder="Describe the action..."></textarea>
-                </div>
-                <button class="btn primary full">Save Maintenance Record</button>
-              </form>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-h">Maintenance Records</div>
+        <div class="card mb">
+            <div class="card-h">Active Maintenance</div>
             <div class="table-wrap">
               <table>
                 <thead>
-                  <tr><th>ID</th><th>TOOL</th><th>DATE</th><th>TYPE</th><th>ISSUE</th><th>ACTION</th><th>STATUS</th><th></th></tr>
+                  <tr><th>TOOL ID</th><th>TOOL</th><th>CATEGORY</th><th>CONDITION</th><th>DATE</th><th>TYPE</th><th>INSPECTION ISSUE</th><th>ACTION</th><th>STATUS</th><th></th></tr>
                 </thead>
-                <tbody id="maintenanceBody"></tbody>
+                <tbody id="activeMaintenanceBody"></tbody>
               </table>
             </div>
-          </div>
+        </div>
+
+        <div class="card">
+            <div class="card-h">Completed &amp; Unrepairable Maintenance</div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>TOOL ID</th><th>TOOL</th><th>CATEGORY</th><th>CONDITION</th><th>DATE</th><th>TYPE</th><th>INSPECTION ISSUE</th><th>ACTION</th><th>STATUS</th><th></th></tr>
+                </thead>
+                <tbody id="completedMaintenanceBody"></tbody>
+              </table>
+            </div>
         </div>
       </div>
     </main>
+  </div>
+  <div class="modal hidden" id="maintenanceDetailsModal">
+    <div class="modal-card">
+      <h3 id="maintenanceDetailsTitle"></h3>
+      <img id="maintenanceDetailsImage" class="tool-details-image" alt="Tool picture" hidden>
+      <div class="kv"><span class="kv-label">Tool ID</span><div id="maintenanceDetailsToolId"></div></div>
+      <div class="kv"><span class="kv-label">Category</span><div id="maintenanceDetailsCategory"></div></div>
+      <div class="kv"><span class="kv-label">Brand</span><div id="maintenanceDetailsBrand"></div></div>
+      <div class="kv"><span class="kv-label">Model</span><div id="maintenanceDetailsModel"></div></div>
+      <div class="kv"><span class="kv-label">Power</span><div id="maintenanceDetailsPower"></div></div>
+      <div class="kv"><span class="kv-label">Condition</span><div id="maintenanceDetailsCondition"></div></div>
+      <div class="kv"><span class="kv-label">Tool Status</span><div id="maintenanceDetailsToolStatus"></div></div>
+      <hr>
+      <div class="kv"><span class="kv-label">Maintenance Details</span><div id="maintenanceDetailsRecord"></div></div>
+      <div class="section-title"><b>Issue reported during inspection</b></div>
+      <p id="maintenanceDetailsIssue" class="info-text"></p>
+      <div class="section-title"><b>Action / Planned</b></div>
+      <p id="maintenanceDetailsAction" class="info-text"></p>
+      <div class="row end mt">
+        <button class="btn" data-close-modal>Close</button>
+      </div>
+    </div>
   </div>
   <div id="toast" class="toast"></div>
   <script type="module" src="../script/pages/maintenance.js"></script>

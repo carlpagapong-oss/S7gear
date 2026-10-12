@@ -15,9 +15,12 @@ export const STATUS_COLORS = {
   "Passed": "b-green",
   "Needs Maintenance": "b-orange",
   "Failed / Unsafe": "b-red",
+  "Inspected": "b-green",
+  "Not Inspected": "b-orange",
   // maintenance status
   "Completed": "b-green",
   "In Progress": "b-orange",
+  "Unrepairable": "b-red",
 };
 
 export const CONDITION_COLORS = {

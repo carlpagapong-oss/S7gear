@@ -3,6 +3,7 @@ import uuid
 from datetime import date
 from pathlib import Path
 
+import mysql.connector
 from flask import Blueprint, jsonify, request, send_from_directory, url_for
 
 from routes.api_helpers import (
@@ -15,6 +16,7 @@ from routes.api_helpers import (
 )
 
 tools_bp = Blueprint("tools", __name__, url_prefix="/api/tools")
+UNREPAIRABLE_REMARK = "Cannot be repaired"
 UPLOAD_DIRECTORY = Path(__file__).resolve().parents[2] / "uploads" / "tool-images"
 MAX_IMAGE_SIZE = 5 * 1024 * 1024
 TOOL_ID_PATTERN = re.compile(r"^PT-\d{3,}$")
@@ -59,7 +61,13 @@ TOOL_SELECT = """
              SELECT MAX(si.inspection_date)
              FROM safety_inspections si
              WHERE si.tool_id = t.tool_id
-           ) AS last_inspection
+           ) AS last_inspection,
+           EXISTS (
+             SELECT 1
+             FROM maintenance_records mr
+             WHERE mr.tool_id = t.tool_id
+               AND mr.remarks = 'Cannot be repaired'
+           ) AS unrepairable
     FROM tools t
     JOIN tool_categories c ON c.category_id = t.category_id
 """
@@ -292,6 +300,7 @@ def delete_tool(tool_code):
     if error:
         return error
     try:
+        connection.start_transaction()
         cursor = connection.cursor(dictionary=True)
         cursor.execute(
             "SELECT tool_id, current_status FROM tools WHERE tool_code = %s FOR UPDATE",
@@ -299,30 +308,52 @@ def delete_tool(tool_code):
         )
         tool = cursor.fetchone()
         if tool is None:
+            connection.rollback()
             return jsonify({"message": f"Tool {tool_code} not found."}), 404
         if tool["current_status"] == "Borrowed":
+            connection.rollback()
             return jsonify({"message": "Cannot delete a borrowed tool."}), 409
 
         cursor.execute(
-            """
-            SELECT
-              (SELECT COUNT(*) FROM borrowing_items WHERE tool_id = %s) +
-              (SELECT COUNT(*) FROM safety_inspections WHERE tool_id = %s) +
-              (SELECT COUNT(*) FROM maintenance_records WHERE tool_id = %s) AS history_count
-            """,
-            (tool["tool_id"], tool["tool_id"], tool["tool_id"]),
+            "SELECT borrowing_id FROM borrowing_items WHERE tool_id = %s",
+            (tool["tool_id"],),
         )
-        if cursor.fetchone()["history_count"]:
-            return jsonify({"message": "Cannot delete a tool that has history."}), 409
+        borrowing_ids = list({row["borrowing_id"] for row in cursor.fetchall()})
+        cursor.execute(
+            "SELECT 1 FROM borrowing_items WHERE tool_id = %s AND returned_at IS NULL LIMIT 1",
+            (tool["tool_id"],),
+        )
+        if cursor.fetchone():
+            connection.rollback()
+            return jsonify({"message": "Return this tool before deleting it."}), 409
+
+        cursor.execute("DELETE FROM borrowing_items WHERE tool_id = %s", (tool["tool_id"],))
+        cursor.execute("DELETE FROM safety_inspections WHERE tool_id = %s", (tool["tool_id"],))
+        cursor.execute("DELETE FROM maintenance_records WHERE tool_id = %s", (tool["tool_id"],))
+        if borrowing_ids:
+            placeholders = ", ".join(["%s"] * len(borrowing_ids))
+            cursor.execute(
+                f"""
+                DELETE FROM borrowings
+                WHERE borrowing_id IN ({placeholders})
+                  AND NOT EXISTS (
+                    SELECT 1 FROM borrowing_items
+                    WHERE borrowing_items.borrowing_id = borrowings.borrowing_id
+                  )
+                """,
+                tuple(borrowing_ids),
+            )
 
         cursor.execute("DELETE FROM tools WHERE tool_id = %s", (tool["tool_id"],))
         connection.commit()
-        return "", 204
+        return jsonify({"message": "Tool and its history deleted."})
+    except mysql.connector.Error:
+        connection.rollback()
+        raise
     finally:
         if "cursor" in locals():
             cursor.close()
         connection.close()
-
 
 @tools_bp.route("/<tool_code>/history", methods=["GET"])
 @database_errors
@@ -363,7 +394,9 @@ def get_tool_history(tool_code):
             SELECT si.inspection_id, t.tool_code AS tool_id,
                    si.inspector_id, u.full_name AS inspector_name,
                    si.inspection_date,
-                   CASE WHEN si.result = 'Failed' THEN 'Failed / Unsafe'
+                   CASE WHEN si.result = 'Failed'
+                              OR si.condition_found IN ('Damaged', 'Unsafe')
+                        THEN 'Needs Maintenance'
                         ELSE si.result END AS result,
                    si.condition_found AS `condition`, si.findings,
                    CONCAT_WS(' | ', si.corrective_action, si.remarks) AS remarks
@@ -382,7 +415,9 @@ def get_tool_history(tool_code):
                    COALESCE(mr.started_at, mr.created_at) AS maintenance_date,
                    mr.maintenance_type, mr.description AS issue,
                    COALESCE(mr.parts_replaced, '') AS `action`,
-                   CASE WHEN mr.maintenance_status = 'Pending'
+                   CASE WHEN mr.remarks = %s
+                        THEN 'Unrepairable'
+                        WHEN mr.maintenance_status = 'Pending'
                         THEN 'In Progress' ELSE mr.maintenance_status END AS status,
                    NULL AS next
             FROM maintenance_records mr
@@ -390,7 +425,7 @@ def get_tool_history(tool_code):
             WHERE mr.tool_id = %s
             ORDER BY mr.maintenance_id DESC
             """,
-            (tool_id,),
+            (UNREPAIRABLE_REMARK, tool_id),
         )
         maintenance = cursor.fetchall()
         return jsonify({

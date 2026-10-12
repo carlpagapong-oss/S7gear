@@ -20,7 +20,7 @@ export function showSidebar() {
   const isSafetyOfficer = role === "safety officer";
   const isToolManager = role === "tool manager";
   const allowedPages = isSafetyOfficer
-    ? ["safety-home", "inspection", "maintenance"]
+    ? ["safety-home", "inspection", "maintenance", "history"]
     : MENU_ITEMS
       .filter((item) => item.page !== "safety-home"
         && !(isToolManager && ["inspection", "maintenance"].includes(item.page)))

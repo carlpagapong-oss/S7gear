@@ -4,23 +4,35 @@
 // =========================================================
 
 import { getActiveBorrows, getTools } from "../database.js";
+import { currentUser } from "../config.js";
 import { $, countByStatus, findActiveBorrow, optionsHtml, uniqueValues } from "../helpers.js";
 import { emptyRowHtml, toolRowHtml } from "../ui/tool-table.js";
 import { initLayout } from "../ui/layout.js";
+import { toast } from "../ui/toast.js";
 
 initLayout();
 
 let tools = [];
 let activeBorrows = [];
+let refreshInProgress = false;
+const isToolManager = currentUser.role.trim().toLowerCase() === "tool manager";
 
 async function showAvailabilityPage() {
-  tools = await getTools();
-  activeBorrows = await getActiveBorrows();
+  if (refreshInProgress) return;
+  refreshInProgress = true;
+  try {
+    [tools, activeBorrows] = await Promise.all([getTools(), getActiveBorrows()]);
+    if (isToolManager) {
+      $("#unrepairableFilterLabel").hidden = false;
+    }
 
-  $("#subtitle").textContent = `Real-time status of all ${tools.length} tools`;
-  showStatusCounts();
-  showTypeFilter();
-  showFilteredTools();
+    $("#subtitle").textContent = `Real-time status of all ${tools.length} tools`;
+    showStatusCounts();
+    showTypeFilter();
+    showFilteredTools();
+  } finally {
+    refreshInProgress = false;
+  }
 }
 
 function showStatusCounts() {
@@ -33,8 +45,10 @@ function showStatusCounts() {
 
 // The "All Types" dropdown lists every tool type that exists.
 function showTypeFilter() {
+  const selectedType = $("#typeFilter").value;
   const types = uniqueValues(tools.map((tool) => tool.type));
   $("#typeFilter").innerHTML = `<option value="">All Types</option>` + optionsHtml(types);
+  $("#typeFilter").value = selectedType;
 }
 
 // Show only the tools that match the search box and both dropdowns.
@@ -42,6 +56,7 @@ function showFilteredTools() {
   const search = $("#searchBox").value.toLowerCase();
   const status = $("#statusFilter").value;
   const type = $("#typeFilter").value;
+  const includeUnrepairable = !isToolManager || $("#includeUnrepairable").checked;
 
   const matches = tools.filter((tool) => {
     const borrow = findActiveBorrow(activeBorrows, tool.id);
@@ -50,8 +65,9 @@ function showFilteredTools() {
     const matchesStatus = !status || tool.status === status;
     const matchesType = !type || tool.type === type;
     const matchesSearch = !search || searchableText.includes(search);
+    const matchesUnrepairable = includeUnrepairable || !tool.unrepairable;
 
-    return matchesStatus && matchesType && matchesSearch;
+    return matchesStatus && matchesType && matchesSearch && matchesUnrepairable;
   });
 
   const rows = matches.map((tool) => toolRowHtml(tool, findActiveBorrow(activeBorrows, tool.id), false));
@@ -63,5 +79,20 @@ function showFilteredTools() {
 $("#searchBox").addEventListener("input", showFilteredTools);
 $("#statusFilter").addEventListener("input", showFilteredTools);
 $("#typeFilter").addEventListener("input", showFilteredTools);
-
+$("#includeUnrepairable").addEventListener("change", showFilteredTools);
+if (isToolManager) {
+  window.setInterval(() => {
+    if (document.visibilityState === "visible") {
+      showAvailabilityPage().catch((error) => toast(`Could not refresh tools: ${error.message}`));
+    }
+  }, 3000);
+  window.addEventListener("focus", () => {
+    showAvailabilityPage().catch((error) => toast(`Could not refresh tools: ${error.message}`));
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+      showAvailabilityPage().catch((error) => toast(`Could not refresh tools: ${error.message}`));
+    }
+  });
+}
 showAvailabilityPage();

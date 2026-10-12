@@ -72,6 +72,7 @@ def tool_json(row):
         "imagePath": row["image_path"] or "",
         "condition": row["condition"],
         "status": row["status"],
+        "unrepairable": bool(row.get("unrepairable", False)),
         "lastInspection": iso_value(row["last_inspection"]),
     }
 
@@ -110,6 +111,14 @@ def maintenance_json(row):
     return {
         "id": format_record_id("MNT", row["maintenance_id"]),
         "toolId": row["tool_id"],
+        "toolType": row.get("tool_type") or "",
+        "brand": row.get("brand") or "",
+        "model": row.get("model") or "",
+        "power": row.get("power") or "",
+        "imagePath": row.get("image_path") or "",
+        "toolStatus": row.get("tool_status") or "",
+        "category": row.get("category") or "",
+        "toolCondition": row.get("tool_condition") or "",
         "date": iso_value(row["maintenance_date"]),
         "type": row["maintenance_type"],
         "issue": row["issue"],

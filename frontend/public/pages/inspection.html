@@ -25,12 +25,30 @@
           <!-- ============ Tool list and inspection history ============ -->
           <div class="inspection-tools-column">
             <div class="card mb">
-              <div class="card-h">Find Tool</div>
+              <div class="card-h">Inspection Schedule</div>
               <div class="card-b">
-                <div class="field">
-                  <label for="findToolId">SEARCH TOOLS</label>
-                  <input id="findToolId" type="search" placeholder="Search by tool ID, type, or category">
-                </div>
+                <p class="info-text mt-0" id="inspectionScheduleStatus" aria-live="polite"></p>
+                <form id="scheduleInspectionForm">
+                  <div class="field">
+                    <label for="scheduleDate">NEXT INSPECTION DATE</label>
+                    <input id="scheduleDate" type="date" required>
+                  </div>
+                  <button class="btn primary full" id="scheduleSubmit">Schedule Inspection</button>
+                </form>
+              </div>
+            </div>
+
+            <div class="card mb">
+              <div class="card-h">Tools</div>
+              <div class="toolbar">
+                <input id="findToolId" type="search" placeholder="Search by tool ID, type, or category" aria-label="Search tools">
+                <select id="inspectionStatusFilter" aria-label="Filter inspection status">
+                  <option value="all">All tools</option>
+                  <option value="pending">Not inspected</option>
+                  <option value="inspected">Inspected</option>
+                </select>
+              </div>
+              <div class="card-b">
                 <div id="inspectionToolList"></div>
                 <!-- Selected tool summary -->
                 <div id="selectedTool"></div>
@@ -38,7 +56,7 @@
             </div>
 
             <div class="card">
-              <div class="card-h">Recent Inspections</div>
+              <div class="card-h">Inspection History</div>
               <div id="recentList"></div>
             </div>
           </div>
@@ -81,7 +99,6 @@
                     <div class="seg" id="resultButtons">
                       <button type="button" data-result="Passed">Passed</button>
                       <button type="button" data-result="Needs Maintenance">Needs Maintenance</button>
-                      <button type="button" data-result="Failed / Unsafe">Failed / Unsafe</button>
                     </div>
                   </div>
 
@@ -89,11 +106,6 @@
                     <label>FINDINGS</label>
                     <textarea name="findings" placeholder="Describe what was found..."></textarea>
                   </div>
-                  <div class="field">
-                    <label>REMARKS</label>
-                    <textarea name="remarks" placeholder="Additional notes or recommendations..."></textarea>
-                  </div>
-
                   <!-- Explains what will happen to the tool (shown after a result is chosen) -->
                   <div class="note hidden" id="resultNote"></div>
 

@@ -11,3 +11,7 @@ export function addMaintenanceRecord(record) {
 export function completeMaintenance(id) {
   return postJson(`/maintenance/${encodeURIComponent(id)}/complete`, {});
 }
+
+export function markMaintenanceUnrepairable(id) {
+  return postJson(`/maintenance/${encodeURIComponent(id)}/unrepairable`, {});
+}
