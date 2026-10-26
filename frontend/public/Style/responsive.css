@@ -25,11 +25,7 @@
     z-index: 20;
     width: 100%;
   }
-  .sidebar-profile {
-    flex: none;
-    margin: 0;
-    max-width: 260px;
-  }
+  .sidebar-profile { flex: 0 0 auto; margin: 0 4px 0 auto; max-width: 220px; }
   .brand { padding: 10px 14px; border-bottom: 0; }
 
   /* Menu becomes one scrollable row */
@@ -55,10 +51,12 @@
 
   main    { margin-left: 0; }
   .topbar { position: static; }
+  .content { padding-top: 18px; }
 }
 
 /* ---------- Phone (600px and below) ---------- */
 @media (max-width: 600px) {
+  .topbar { padding: 0 12px; }
   .content { padding: 16px 12px 32px; }
 
   /* Counters: 2 per row */
@@ -99,6 +97,9 @@
   .card-h    { flex-wrap: wrap; gap: 6px; padding: 12px; }
   .card-b    { padding: 12px; }
   .list-item { flex-wrap: wrap; padding: 10px 12px; }
+  .list-item > * { min-width: 0; }
+  .row { flex-direction: column; align-items: stretch; }
+  .row .btn { width: 100%; }
 
   /* Pop-ups use almost the whole screen */
   .modal-card { width: 96vw; padding: 16px; }

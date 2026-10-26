@@ -228,3 +228,25 @@ input:focus {
     height: 13px;
     filter: brightness(0) invert(1);
 }
+
+@media (max-width: 480px) {
+    .login-container {
+        align-items: flex-start;
+        padding: 16px;
+    }
+
+    .login-card {
+        margin-top: 8vh;
+        padding: 28px 20px 32px;
+    }
+
+    .login-card h1 {
+        font-size: 22px;
+    }
+
+    input,
+    .sign-in-button {
+        height: 42px;
+        font-size: 14px;
+    }
+}
